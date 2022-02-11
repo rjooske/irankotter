@@ -1,52 +1,19 @@
-const puppeteer = require("puppeteer");
-const { CommandListener } = require("./CommandListener");
+const { Healer } = require("./Healer");
 
 async function main() {
-  const browser = await puppeteer.launch({
-    headless: false,
-    defaultViewport: { width: 800, height: 600 },
-  });
-
-  const page = await browser.newPage();
-  await page.goto("https://test.drednot.io/invite/esDt-6P1Ohf4H5SUiytuJd2o");
-
-  await waitForAndClickSelector(
-    page,
-    "body > div.modal-container > div > div > div > button"
-  );
-  await waitForAndClickSelector(
-    page,
-    "body > div.modal-container > div > div > button"
+  const healers = await Promise.all(
+    new Array(5).fill().map(async () => {
+      const healer = new Healer(
+        "https://test.drednot.io/invite/esDt-6P1Ohf4H5SUiytuJd2o"
+      );
+      await healer.join();
+      return healer;
+    })
   );
 
-  await page.waitForSelector("#exit_button");
+  await new Promise((res) => process.on("SIGINT", res));
 
-  const commandListener = new CommandListener(page);
-  commandListener.on("heal-start", async () => {
-    await page.mouse.move(400, 200);
-    await page.mouse.down();
-  });
-  commandListener.on("heal-stop", async () => {
-    await Promise.all([
-      page.mouse.click(page.viewport().width / 2, page.viewport().height / 2, {
-        button: "right",
-        delay: 1000,
-      }),
-      page.mouse.up(),
-    ]);
-  });
-  commandListener.listen();
-
-  await new Promise(() => {});
-}
-
-async function waitForAndClickSelector(page, selector) {
-  await page.waitForSelector(selector);
-  await page.click(selector);
-}
-
-function sleep(duration) {
-  return new Promise((res) => setTimeout(res, duration));
+  await Promise.all(healers.map((healer) => healer.leave()));
 }
 
 main();
