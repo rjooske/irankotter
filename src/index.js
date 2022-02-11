@@ -1,4 +1,5 @@
 const puppeteer = require("puppeteer");
+const { CommandListener } = require("./CommandListener");
 
 async function main() {
   const browser = await puppeteer.launch({ headless: false });
@@ -15,9 +16,16 @@ async function main() {
     "body > div.modal-container > div > div > button"
   );
 
-  await sleep(5 * 1000);
+  await page.waitForSelector("#exit_button");
 
-  await page.keyboard.press("Space", { delay: 1000 });
+  const commandListener = new CommandListener(page);
+  commandListener.on("heal-start", async () => {
+    await page.keyboard.press("A", { delay: 1000 });
+  });
+  commandListener.on("heal-stop", async () => {
+    await page.keyboard.press("D", { delay: 1000 });
+  });
+  commandListener.listen();
 
   await new Promise(() => {});
 }
