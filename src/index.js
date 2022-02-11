@@ -2,7 +2,10 @@ const puppeteer = require("puppeteer");
 const { CommandListener } = require("./CommandListener");
 
 async function main() {
-  const browser = await puppeteer.launch({ headless: false });
+  const browser = await puppeteer.launch({
+    headless: false,
+    defaultViewport: { width: 800, height: 600 },
+  });
 
   const page = await browser.newPage();
   await page.goto("https://test.drednot.io/invite/esDt-6P1Ohf4H5SUiytuJd2o");
@@ -20,10 +23,17 @@ async function main() {
 
   const commandListener = new CommandListener(page);
   commandListener.on("heal-start", async () => {
-    await page.keyboard.press("A", { delay: 1000 });
+    await page.mouse.move(400, 200);
+    await page.mouse.down();
   });
   commandListener.on("heal-stop", async () => {
-    await page.keyboard.press("D", { delay: 1000 });
+    await Promise.all([
+      page.mouse.click(page.viewport().width / 2, page.viewport().height / 2, {
+        button: "right",
+        delay: 1000,
+      }),
+      page.mouse.up(),
+    ]);
   });
   commandListener.listen();
 

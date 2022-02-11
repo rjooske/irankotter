@@ -56,4 +56,4 @@ function createRandomString(length) {
   return result;
 }
 
-module.exports = { CommandListener: CommandListener };
+module.exports = { CommandListener };
