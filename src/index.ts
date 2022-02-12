@@ -2,14 +2,11 @@ import { Healer } from "./Healer";
 
 async function main() {
   const healers = await Promise.all(
-    new Array(3).fill(0).map(async (_, i) => {
-      const healer = new Healer(
-        "https://test.drednot.io/invite/esDt-6P1Ohf4H5SUiytuJd2o",
-        i / 3
-      );
-      await healer.join();
-      return healer;
-    })
+    new Array(3)
+      .fill(0)
+      .map(() =>
+        Healer.join("https://test.drednot.io/invite/esDt-6P1Ohf4H5SUiytuJd2o")
+      )
   );
 
   await new Promise((res) => process.on("SIGINT", res));
