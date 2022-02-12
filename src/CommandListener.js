@@ -43,6 +43,8 @@ class CommandListener extends EventEmitter {
         this.emit("heal-start");
       } else if (command === "no heal") {
         this.emit("heal-stop");
+      } else if (command === "use up") {
+        this.emit("use-up");
       }
     });
   }
