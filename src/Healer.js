@@ -1,13 +1,14 @@
-import { launch } from "puppeteer";
+import puppeteer from "puppeteer";
 import { CommandListener } from "./CommandListener";
 
 export class Healer {
-  constructor(url) {
+  constructor(url, progress) {
     this.url = url;
+    this.progress = progress;
   }
 
   async join() {
-    this.browser = await launch({
+    this.browser = await puppeteer.launch({
       headless: true,
       defaultViewport: { width: 800, height: 600 },
     });
@@ -41,6 +42,7 @@ export class Healer {
     const commandListener = new CommandListener(this.page);
     commandListener.on("heal-start", async () => {
       this.healing = true;
+      await new Promise((res) => setTimeout(res, 2000 * this.progress));
       await this.page.mouse.move(this.page.viewport().width / 2, 0);
       await this.page.mouse.down();
     });

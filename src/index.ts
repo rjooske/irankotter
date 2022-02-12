@@ -2,9 +2,10 @@ import { Healer } from "./Healer";
 
 async function main() {
   const healers = await Promise.all(
-    new Array(5).fill(0).map(async () => {
+    new Array(3).fill(0).map(async (_, i) => {
       const healer = new Healer(
-        "https://test.drednot.io/invite/esDt-6P1Ohf4H5SUiytuJd2o"
+        "https://test.drednot.io/invite/esDt-6P1Ohf4H5SUiytuJd2o",
+        i / 3
       );
       await healer.join();
       return healer;
