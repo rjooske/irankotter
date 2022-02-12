@@ -1,17 +1,43 @@
+import commandLineArgs from "command-line-args";
+import { argv } from "process";
 import { Healer } from "./Healer";
 
+interface Options {
+  url?: string;
+  population?: number;
+}
+
 async function main() {
+  const options = parseArguments(argv.slice(2));
+  if (!options.url || !options.population) {
+    console.error(
+      [
+        "Usage   : npm start -- -p (Number of bots to send) -u (Invitation link)",
+        "Example : npm start -- -p 4 -u https://drednot.io/invite/abcdefghijklmn",
+      ].join("\n")
+    );
+    return;
+  }
+
   const healers = await Promise.all(
-    new Array(3)
-      .fill(0)
-      .map(() =>
-        Healer.join("https://test.drednot.io/invite/esDt-6P1Ohf4H5SUiytuJd2o")
-      )
+    new Array<string>(options.population)
+      .fill(options.url)
+      .map((url) => Healer.join(url))
   );
 
   await new Promise((res) => process.on("SIGINT", res));
 
   await Promise.all(healers.map((healer) => healer.leave()));
+}
+
+function parseArguments(args: string[]) {
+  return commandLineArgs(
+    [
+      { name: "url", alias: "u", type: String },
+      { name: "population", alias: "p", type: Number },
+    ],
+    { argv: args, partial: true }
+  ) as Options;
 }
 
 main();
