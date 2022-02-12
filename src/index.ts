@@ -2,7 +2,7 @@ const { Healer } = require("./Healer");
 
 async function main() {
   const healers = await Promise.all(
-    new Array(5).fill().map(async () => {
+    new Array(5).fill(0).map(async () => {
       const healer = new Healer(
         "https://test.drednot.io/invite/esDt-6P1Ohf4H5SUiytuJd2o"
       );
