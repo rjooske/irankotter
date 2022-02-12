@@ -96,6 +96,16 @@ export class Healer {
     await this.browser.close();
   }
 
+  waitUntilExit() {
+    return new Promise<void>((resolve) => {
+      this.page.on("console", (event) => {
+        if (event.text() === "[[drednot dead]]") {
+          resolve();
+        }
+      });
+    });
+  }
+
   static async join(url: string) {
     // This must be puppeteer.launch for some reason
     const browser = await puppeteer.launch({

@@ -25,7 +25,12 @@ async function main() {
       .map((url) => Healer.join(url))
   );
 
-  await new Promise((res) => process.on("SIGINT", res));
+  console.log("Control + C to stop");
+
+  await Promise.any([
+    new Promise((res) => process.on("SIGINT", res)),
+    Promise.all(healers.map((healer) => healer.waitUntilExit())),
+  ]);
 
   await Promise.all(healers.map((healer) => healer.leave()));
 }
