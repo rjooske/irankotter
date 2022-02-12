@@ -5,6 +5,7 @@ import { Healer } from "./Healer";
 interface Options {
   url?: string;
   population?: number;
+  timeout?: number;
 }
 
 async function main() {
@@ -12,17 +13,18 @@ async function main() {
   if (!options.url || !options.population) {
     console.error(
       [
-        "Usage   : npm start -- -p (Number of bots to send) -u (Invitation link)",
+        "Usage   : npm start -- -p (Number of bots to send) -u (Invitation link) -t (Timeout for UI navigation in seconds, Default: 30)",
         "Example : npm start -- -p 4 -u https://drednot.io/invite/abcdefghijklmn",
+        "Example : npm start -- -p 2 -u https://drednot.io/invite/opqrstuvwxyz -t 120",
       ].join("\n")
     );
     return;
   }
 
   const healers = await Promise.all(
-    new Array<string>(options.population)
-      .fill(options.url)
-      .map((url) => Healer.join(url))
+    new Array<[string, number]>(options.population)
+      .fill([options.url, (options.timeout ?? 30) * 1000])
+      .map(([url, timeout]) => Healer.join(url, timeout))
   );
 
   console.log("Control + C to stop");
@@ -40,6 +42,7 @@ function parseArguments(args: string[]) {
     [
       { name: "url", alias: "u", type: String },
       { name: "population", alias: "p", type: Number },
+      { name: "timeout", alias: "t", type: Number },
     ],
     { argv: args, partial: true }
   ) as Options;

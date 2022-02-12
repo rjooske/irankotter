@@ -106,7 +106,7 @@ export class Healer {
     });
   }
 
-  static async join(url: string) {
+  static async join(url: string, defaultTimeout: number) {
     // This must be puppeteer.launch for some reason
     const browser = await puppeteer.launch({
       headless: true,
@@ -115,6 +115,7 @@ export class Healer {
 
     const page = await browser.newPage();
     await page.goto(url);
+    page.setDefaultTimeout(defaultTimeout);
 
     const healer = new Healer(browser, page);
     await healer.join();
