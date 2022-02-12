@@ -1,13 +1,13 @@
-const puppeteer = require("puppeteer");
-const { CommandListener } = require("./CommandListener");
+import { launch } from "puppeteer";
+import { CommandListener } from "./CommandListener";
 
-class Healer {
+export class Healer {
   constructor(url) {
     this.url = url;
   }
 
   async join() {
-    this.browser = await puppeteer.launch({
+    this.browser = await launch({
       headless: true,
       defaultViewport: { width: 800, height: 600 },
     });
@@ -97,5 +97,3 @@ class Healer {
     await this.page.keyboard.type(`\n${message}\n`, { delay: 50 });
   }
 }
-
-module.exports = { Healer };

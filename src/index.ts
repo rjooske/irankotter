@@ -1,4 +1,4 @@
-const { Healer } = require("./Healer");
+import { Healer } from "./Healer";
 
 async function main() {
   const healers = await Promise.all(

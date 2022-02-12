@@ -1,7 +1,7 @@
-const { EventEmitter } = require("events");
-const { Page } = require("puppeteer");
+import { EventEmitter } from "events";
+import { Page } from "puppeteer";
 
-class CommandListener extends EventEmitter {
+export class CommandListener extends EventEmitter {
   /**
    * @param {Page} page
    */
@@ -57,5 +57,3 @@ function createRandomString(length) {
   }
   return result;
 }
-
-module.exports = { CommandListener };
