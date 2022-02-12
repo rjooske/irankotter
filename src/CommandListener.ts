@@ -1,19 +1,30 @@
 import { EventEmitter } from "events";
 import { Page } from "puppeteer";
+import TypedEmitter from "typed-emitter";
 
-export class CommandListener extends EventEmitter {
-  /**
-   * @param {Page} page
-   */
-  constructor(page) {
+type Events = {
+  "heal-start": () => void;
+  "heal-stop": () => void;
+  "use-up": () => void;
+};
+
+const commandToEventName: { [key: string]: keyof Events } = {
+  heal: "heal-start",
+  "no heal": "heal-stop",
+  "use up": "use-up",
+};
+
+export class CommandListener extends (EventEmitter as new () => TypedEmitter<Events>) {
+  constructor(private readonly page: Page) {
     super();
-    this.page = page;
+
+    const prefix = createRandomString(128);
+    this.observeChat(prefix);
+    this.observeConsole(prefix);
   }
 
-  listen() {
-    const prefix = createRandomString(128);
-
-    this.page.evaluate((prefix) => {
+  private observeChat(prefix: string) {
+    this.page.evaluate(`
       new MutationObserver((mutations) => {
         for (const mutation of mutations) {
           for (const node of mutation.addedNodes) {
@@ -21,12 +32,14 @@ export class CommandListener extends EventEmitter {
               role: node.querySelector("span").innerText,
               message: node.lastChild.textContent,
             });
-            console.log(prefix + json);
+            console.log("${prefix}" + json);
           }
         }
       }).observe(document.querySelector("#chat-content"), { childList: true });
-    }, prefix);
+    `);
+  }
 
+  private observeConsole(prefix: string) {
     this.page.on("console", (event) => {
       const text = event.text();
       if (!text.startsWith(prefix)) {
@@ -39,18 +52,17 @@ export class CommandListener extends EventEmitter {
       }
 
       const command = message.toLowerCase();
-      if (command === "heal") {
-        this.emit("heal-start");
-      } else if (command === "no heal") {
-        this.emit("heal-stop");
-      } else if (command === "use up") {
-        this.emit("use-up");
+      const eventName = commandToEventName[command];
+      if (!eventName) {
+        return;
       }
+
+      this.emit(eventName);
     });
   }
 }
 
-function createRandomString(length) {
+function createRandomString(length: number) {
   let result = "";
   for (let i = 0; i < length; i++) {
     result += Math.trunc(36 * Math.random()).toString(36);

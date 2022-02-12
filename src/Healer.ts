@@ -59,7 +59,6 @@ export class Healer {
       await this.page.waitForTimeout(HEAL_USE_DURATION);
       await this.page.mouse.up();
     });
-    commandListener.listen();
   }
 
   private async waitForAndClickSelector(selector: string) {
