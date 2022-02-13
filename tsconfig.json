@@ -14,5 +14,6 @@
     "skipLibCheck": true,
     "strict": true,
     "target": "ES6"
-  }
+  },
+  "include": ["src"]
 }
