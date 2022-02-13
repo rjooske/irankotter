@@ -13,15 +13,15 @@ async function main() {
   const options = parseArguments(argv.slice(2));
   if (!options) {
     console.error(
-      [
-        "Usage: npm start -- -t (Timeout for UI navigation in seconds, Default: 30)",
-        "",
-        "Example, Use the default timeout value:",
-        "    npm start",
-        "",
-        "Example, Set the timeout to 120 seconds:",
-        "    npm start -- -t 120",
-      ].join("\n")
+      `
+Usage: npm start -- -t (Timeout for UI navigation in seconds, Default: 30)
+
+Example, Use the default timeout value:
+    npm start
+
+Example, Set the timeout to 120 seconds:
+    npm start -- -t 120
+      `.trim()
     );
     return;
   }

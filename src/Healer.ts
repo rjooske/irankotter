@@ -61,7 +61,7 @@ export class Healer extends (EventEmitter as new () => TypedEventEmitter<Events>
     commandListener.on("heal-start", async () => {
       this.isHealing = true;
       await this.page?.waitForTimeout(HEAL_USE_DURATION * Math.random());
-      await this.page?.mouse.move(this.getPageWidth() / 2, 0);
+      await this.page?.mouse.move(0, 0);
       await this.page?.mouse.down();
     });
     commandListener.on("heal-stop", async () => {
