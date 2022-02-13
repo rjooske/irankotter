@@ -51,7 +51,7 @@
           event.preventDefault();
           await sendJSON("/summon", {
             url: event.target.url.value,
-            count: event.target.count.value,
+            count: parseInt(event.target.count.value),
           });
           location.reload();
         });

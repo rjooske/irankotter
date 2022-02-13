@@ -39,22 +39,29 @@ export class Server extends (EventEmitter as new () => TypedEventEmitter<Events>
 
   private handleSummon(req: Request, res: Response) {
     const url = req.body.url;
-    const count = req.body.count;
-    if (
-      typeof url === "string" &&
-      typeof count === "string" &&
-      parseInt(count) > 0
-    ) {
-      this.emit("summon", url, parseInt(count));
+    if (typeof url !== "string") {
+      res.sendStatus(400);
+      return;
     }
+
+    const count = req.body.count;
+    if (typeof count !== "number" || count < 0) {
+      res.sendStatus(400);
+      return;
+    }
+
     res.sendStatus(200);
+    this.emit("summon", url, count);
   }
 
   private handleKill(req: Request, res: Response) {
     const id = req.body.id;
-    if (typeof id === "string") {
-      this.emit("kill", id);
+    if (typeof id !== "string") {
+      res.sendStatus(400);
+      return;
     }
+
     res.sendStatus(200);
+    this.emit("kill", id);
   }
 }
