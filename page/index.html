@@ -10,7 +10,7 @@
   </head>
   <body>
     <header>Healer Control Panel</header>
-    <form action="summon" method="get">
+    <form>
       <div style="grid-column: 1/3">
         <label for="url">URL</label>
         <input
@@ -42,9 +42,35 @@
         Summon
       </button>
     </form>
-    <ul>
-      __healers__
-    </ul>
-    <script src="js/index.js"></script>
+    __healers__
+    <p>Reload the page to refresh the list</p>
+    <script>
+      document
+        .querySelector("form")
+        .addEventListener("submit", async (event) => {
+          event.preventDefault();
+          await sendJSON("/summon", {
+            url: event.target.url.value,
+            count: event.target.count.value,
+          });
+          location.reload();
+        });
+
+      document.querySelectorAll(".kill").forEach((a) =>
+        a.addEventListener("click", async (event) => {
+          event.preventDefault();
+          await sendJSON("/kill", { id: a.dataset.id });
+          location.reload();
+        })
+      );
+
+      function sendJSON(url, json) {
+        return fetch(url, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(json),
+        });
+      }
+    </script>
   </body>
 </html>
