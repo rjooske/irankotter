@@ -14,7 +14,7 @@ type CreateHealerList = () => string;
 
 export class Server extends (EventEmitter as new () => TypedEventEmitter<Events>) {
   constructor(
-    port: number,
+    readonly port: number,
     private readonly rootPath: string,
     private readonly createHealerList: CreateHealerList
   ) {

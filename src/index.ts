@@ -1,17 +1,23 @@
 import commandLineArgs from "command-line-args";
-import { argv } from "process";
+import { argv, exit } from "process";
 import { Healer } from "./Healer";
 import { Server } from "./Server";
 
 interface Options {
-  timeout?: number;
+  timeout: number;
 }
 
-const healers: Healer[] = [];
+const options = parseArguments(argv.slice(2));
 
-async function main() {
-  const options = parseArguments(argv.slice(2));
-  if (!options) {
+function parseArguments(args: string[]) {
+  try {
+    return {
+      timeout: 30,
+      ...commandLineArgs([{ name: "timeout", alias: "t", type: Number }], {
+        argv: args,
+      }),
+    } as Options;
+  } catch {
     console.error(
       `
 Usage: npm start -- -t (Timeout for UI navigation in seconds, Default: 30)
@@ -23,37 +29,28 @@ Example, Set the timeout to 120 seconds:
     npm start -- -t 120
       `.trim()
     );
-    return;
+    exit(1);
   }
-
-  const port = 6565;
-  const timeout = options.timeout ?? 30;
-  const server = new Server(port, "page", createHealerList);
-  server.on("summon", (url, count) => {
-    for (let i = 0; i < count; i++) {
-      const healer = new Healer(url, timeout);
-      healer.join().catch(() => killHealer(healer.id));
-      healer.waitUntilExit().then(() => killHealer(healer.id));
-      healers.push(healer);
-    }
-  });
-  server.on("kill", (id) => killHealer(id));
-
-  console.log(`Listening on localhost:${port}`);
-  console.log(`Timeout after ${options.timeout ?? 30}s`);
-  console.log("Control + C to stop");
 }
 
-function parseArguments(args: string[]) {
-  try {
-    return commandLineArgs([{ name: "timeout", alias: "t", type: Number }], {
-      argv: args,
-    }) as Options;
-  } catch {}
+const healers: Healer[] = [];
+
+async function main() {
+  const server = new Server(6565, "page", createHealerList);
+  server.on("summon", handleSummon);
+  server.on("kill", handleKill);
+
+  console.log(
+    `
+Healer Control Panel running at http://localhost:${server.port}
+
+Control + C to stop
+    `.trim()
+  );
 }
 
 function createHealerList() {
-  if (healers.length == 0) {
+  if (healers.length === 0) {
     return "";
   }
 
@@ -73,14 +70,23 @@ function createHealerList() {
   return `<ul>${lis}</ul>`;
 }
 
-function killHealer(id: string) {
+function handleSummon(url: string, count: number) {
+  for (let i = 0; i < count; i++) {
+    const healer = new Healer(url, options.timeout);
+    healer.on("error", () => handleKill(healer.id));
+    healer.join();
+    healers.push(healer);
+  }
+}
+
+function handleKill(id: string) {
   for (let i = 0; i < healers.length; i++) {
     const healer = healers[i];
     if (healer.id === id) {
-      healer.leave();
+      healer.close();
+      healers.splice(i, 1);
+      break;
     }
-    healers.splice(i, 1);
-    return;
   }
 }
 

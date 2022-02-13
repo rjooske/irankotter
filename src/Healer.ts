@@ -1,12 +1,12 @@
 import EventEmitter from "events";
-import puppeteer, { Page } from "puppeteer";
+import puppeteer, { ConsoleMessage, Page } from "puppeteer";
 import TypedEventEmitter from "typed-emitter";
 import { CommandListener } from "./CommandListener";
 
 const HEAL_USE_DURATION = 2000;
 
 type Events = {
-  exit: () => void;
+  error: (error: unknown) => void;
 };
 
 export class Healer extends (EventEmitter as new () => TypedEventEmitter<Events>) {
@@ -17,13 +17,10 @@ export class Healer extends (EventEmitter as new () => TypedEventEmitter<Events>
   private page?: Page;
   private isHealing = false;
 
-  private readonly jumpInterval = setInterval(async () => {
-    if (!this.isHealing) {
-      try {
-        await this.page?.keyboard.press("Space", { delay: 1000 });
-      } catch {}
-    }
-  }, 10 * 1000);
+  private readonly jumpInterval = setInterval(
+    this.handleJumpInterval.bind(this),
+    10 * 1000
+  );
 
   constructor(
     private readonly url: string,
@@ -40,78 +37,82 @@ export class Healer extends (EventEmitter as new () => TypedEventEmitter<Events>
     });
 
     this.page = await browser.newPage();
-    await this.page.goto(this.url);
     this.page.setDefaultTimeout(this.defaultTimeout * 1000);
+    this.page.on("console", this.handleConsoleMessage.bind(this));
 
-    await this.waitForAndClickSelector(
-      "body > div.modal-container > div > div > div > button"
-    );
-    await this.waitForAndClickSelector(
-      "body > div.modal-container > div > div > button"
-    );
-
-    await this.waitForJoinToComplete();
-    await this.sendChat("ready");
-
-    await this.page.setViewport({ width: 1, height: 200 });
-    await this.hideSelectorAll("body > *:not(#game-container)");
-
-    // Listen to the commands
     const commandListener = new CommandListener(this.page);
-    commandListener.on("heal-start", async () => {
-      this.isHealing = true;
-      await this.page?.waitForTimeout(HEAL_USE_DURATION * Math.random());
-      await this.page?.mouse.move(0, 0);
-      await this.page?.mouse.down();
-    });
-    commandListener.on("heal-stop", async () => {
-      this.isHealing = false;
-      await Promise.all([
-        this.page?.mouse.click(
-          this.getPageWidth() / 2,
-          this.getPageHeight() / 2,
-          {
-            button: "right",
-            delay: 1000,
-          }
-        ),
-        this.page?.mouse.up(),
-      ]);
-    });
-    commandListener.on("use-up", async () => {
-      await this.page?.mouse.move(
-        this.getPageWidth() / 2,
-        this.getPageHeight() / 2
+    commandListener.on("heal-start", this.handleHealStart.bind(this));
+    commandListener.on("heal-stop", this.handleHealStop.bind(this));
+    commandListener.on("use-up", this.handleUseUp.bind(this));
+
+    try {
+      await this.page.goto(this.url);
+
+      await this.waitForAndClickSelector(
+        "body > div.modal-container > div > div > div > button"
       );
-      await this.page?.mouse.down();
-      await this.page?.waitForTimeout(HEAL_USE_DURATION);
-      await this.page?.mouse.up();
-    });
+      await this.waitForAndClickSelector(
+        "body > div.modal-container > div > div > button"
+      );
+
+      this.shipName = await this.getShipName();
+      await this.sendChat("ready");
+
+      await this.page.setViewport({ width: 1, height: 200 });
+      await this.hideSelectorAll("body > *:not(#game-container)");
+
+      await commandListener.start();
+    } catch (error) {
+      this.error(error);
+    }
   }
 
   private async waitForAndClickSelector(selector: string) {
-    await this.page?.waitForSelector(selector);
-    await this.page?.click(selector);
+    if (!this.page) {
+      throw new Error("Page is falsy");
+    }
+
+    await this.page.waitForSelector(selector);
+    await this.page.click(selector);
   }
 
-  private async waitForJoinToComplete() {
-    await this.page?.waitForFunction(
-      `document.querySelector("#chat-content")?.textContent.match(/Joined ship/)`
-    );
+  private async getShipName() {
+    if (!this.page) {
+      throw new Error("Page is falsy");
+    }
 
-    this.shipName = await this.page?.evaluate(
-      `Promise.resolve(document.querySelector("#chat-content")?.textContent.match(/Joined ship '(.*?)'/)[1])`
-    );
+    const handle = await this.page.waitForFunction(`(() => {
+      const chatContent = document.querySelector("#chat-content");
+      if (!chatContent) return;
+      const match = chatContent.textContent.match(/Joined ship '(.*?)'/);
+      if (!match) return;
+      return match[1];
+    })()`);
+
+    const name = await handle.jsonValue();
+    if (typeof name !== "string") {
+      throw new Error(`Ship name "${JSON.stringify(name)}" is not string`);
+    }
+
+    return name;
   }
 
   private async hideSelectorAll(selector: string) {
-    await this.page?.evaluate(
+    if (!this.page) {
+      throw new Error("Page is falsy");
+    }
+
+    await this.page.evaluate(
       `document.querySelectorAll("${selector}").forEach((e) => (e.style.transform = "scale(0)"))`
     );
   }
 
   private async sendChat(message: string) {
-    await this.page?.keyboard.type(`\n${message}\n`, { delay: 50 });
+    if (!this.page) {
+      throw new Error("Page is falsy");
+    }
+
+    await this.page.keyboard.type(`\n${message}\n`, { delay: 50 });
   }
 
   private getPageWidth() {
@@ -122,19 +123,103 @@ export class Healer extends (EventEmitter as new () => TypedEventEmitter<Events>
     return this.page?.viewport()?.height ?? 0;
   }
 
-  async leave() {
-    clearInterval(this.jumpInterval);
-    await this.page?.browser()?.close();
+  private async handleHealStart() {
+    if (this.isHealing) {
+      return;
+    }
+    this.isHealing = true;
+
+    if (!this.page) {
+      return;
+    }
+
+    try {
+      await this.page.waitForTimeout(HEAL_USE_DURATION * Math.random());
+      await this.page.mouse.move(0, 0);
+      await this.page.mouse.down();
+    } catch (error) {
+      await this.error(error);
+    }
   }
 
-  waitUntilExit() {
-    return new Promise<void>((resolve) => {
-      this.page?.on("console", (event) => {
-        if (event.text() === "[[drednot dead]]") {
-          resolve();
-        }
-      });
-    });
+  private async handleHealStop() {
+    if (!this.isHealing) {
+      return;
+    }
+    this.isHealing = false;
+
+    if (!this.page) {
+      return;
+    }
+
+    try {
+      await this.page.mouse.up();
+      await this.page.mouse.click(
+        this.getPageWidth() / 2,
+        this.getPageHeight() / 2,
+        { button: "right", delay: 1000 }
+      );
+    } catch (error) {
+      await this.error(error);
+    }
+  }
+
+  private async handleUseUp() {
+    if (!this.isHealing) {
+      return;
+    }
+    this.isHealing = false;
+
+    if (!this.page) {
+      return;
+    }
+
+    try {
+      await this.page.mouse.move(
+        this.getPageWidth() / 2,
+        this.getPageHeight() / 2
+      );
+      await this.page.mouse.down();
+      await this.page.waitForTimeout(HEAL_USE_DURATION);
+      await this.page.mouse.up();
+    } catch (error) {
+      await this.error(error);
+    }
+  }
+
+  private async handleJumpInterval() {
+    if (this.isHealing) {
+      return;
+    }
+
+    if (!this.page) {
+      return;
+    }
+
+    try {
+      await this.page.keyboard.press("Space", { delay: 1000 });
+    } catch (error) {
+      await this.error(error);
+    }
+  }
+
+  private async handleConsoleMessage(event: ConsoleMessage) {
+    if (event.text() === "[[drednot dead]]") {
+      await this.error(new Error("Drednot died"));
+    }
+  }
+
+  private async error(error: unknown) {
+    this.emit("error", error);
+    await this.close();
+  }
+
+  async close() {
+    clearInterval(this.jumpInterval);
+
+    if (this.page && !this.page.isClosed()) {
+      this.page.browser().close();
+    }
   }
 }
 

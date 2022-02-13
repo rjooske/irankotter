@@ -17,14 +17,16 @@ const commandToEventName: { [key: string]: keyof Events } = {
 export class CommandListener extends (EventEmitter as new () => TypedEmitter<Events>) {
   constructor(private readonly page: Page) {
     super();
+  }
 
+  async start() {
     const prefix = createRandomString(128);
-    this.observeChat(prefix);
+    await this.observeChat(prefix);
     this.observeConsole(prefix);
   }
 
-  private observeChat(prefix: string) {
-    this.page.evaluate(`
+  private async observeChat(prefix: string) {
+    await this.page.evaluate(`
       new MutationObserver((mutations) => {
         for (const mutation of mutations) {
           for (const node of mutation.addedNodes) {
