@@ -12,6 +12,7 @@ type Events = {
 export class Healer extends (EventEmitter as new () => TypedEventEmitter<Events>) {
   readonly id = createRandomString(128);
 
+  playerName?: string;
   shipName?: string;
 
   private page?: Page;
@@ -91,7 +92,7 @@ export class Healer extends (EventEmitter as new () => TypedEventEmitter<Events>
 
     const name = await handle.jsonValue();
     if (typeof name !== "string") {
-      throw new Error(`Ship name "${JSON.stringify(name)}" is not string`);
+      throw new Error(`Ship name "${name}" is not a string`);
     }
 
     return name;
