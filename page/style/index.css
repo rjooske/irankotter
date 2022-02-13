@@ -1,0 +1,109 @@
+* {
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  color: rgb(230, 230, 230);
+  background-color: rgb(24, 24, 24);
+  font-family: "SpaceMono", monospace;
+  font-weight: bold;
+}
+
+body {
+  margin: 6rem auto;
+  max-width: 55rem;
+  display: flex;
+  flex-direction: column;
+  gap: 4rem;
+}
+
+header {
+  font-size: 4rem;
+}
+
+form {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  grid-template-rows: repeat(2, 1fr);
+  gap: 1em;
+}
+
+form > div {
+  position: relative;
+  display: flex;
+}
+
+form > div::before {
+  content: "";
+  position: absolute;
+  inset: auto 0 0 0;
+  height: 4px;
+  display: block;
+  background-color: currentColor;
+  transform: scaleY(0.5);
+  transform-origin: center bottom;
+  transition: transform ease 100ms;
+}
+
+form > div:focus-within::before {
+  transform: scaleY(1);
+}
+
+form > div > label {
+  font-size: 2.5rem;
+}
+
+form > div > label::after {
+  content: ":";
+}
+
+form > div > input {
+  all: unset;
+  flex-grow: 1;
+  padding: 0 1.5rem;
+  background-color: rgba(230, 230, 230, 0.1);
+  font: 2.5rem "SpaceMono", monospace;
+  transition: background-color ease 100ms;
+}
+
+form > div > input:valid {
+  background-color: rgba(230, 230, 230, 0);
+}
+
+form > button {
+  all: unset;
+  cursor: pointer;
+  background-color: rgb(233, 50, 96);
+  display: grid;
+  place-content: center;
+  color: currentColor;
+  font: bold 2.5rem "SpaceMono", monospace;
+}
+
+ul {
+  display: flex;
+  flex-direction: column;
+  gap: 1em;
+}
+
+ul > li {
+  all: unset;
+  display: flex;
+}
+
+ul > li::before {
+  content: "•";
+}
+
+ul > li[data-status="boot"]::before {
+  color: rgb(231, 185, 35);
+}
+
+ul > li[data-status="up"]::before {
+  color: rgb(44, 218, 39);
+}
+
+.round-left {
+  border-radius: 100vmax 0 0 100vmax;
+}
