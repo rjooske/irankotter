@@ -10,7 +10,7 @@ type Events = {
 };
 
 export class Healer extends (EventEmitter as new () => TypedEventEmitter<Events>) {
-  readonly id = createRandomString(128);
+  readonly id = createRandomString(16);
 
   playerName?: string;
   shipName?: string;
@@ -60,6 +60,7 @@ export class Healer extends (EventEmitter as new () => TypedEventEmitter<Events>
 
       this.shipName = await this.getShipName();
       await this.sendChat(this.id);
+      this.playerName = await this.getPlayerName(this.id);
 
       await this.page.setViewport({ width: 60, height: 200 });
       await this.hideSelectorAll("body > *:not(#game-container)");
@@ -95,6 +96,28 @@ export class Healer extends (EventEmitter as new () => TypedEventEmitter<Events>
     const name = await handle.jsonValue();
     if (typeof name !== "string") {
       throw new Error(`Ship name "${name}" is not a string`);
+    }
+
+    return name;
+  }
+
+  private async getPlayerName(id: string) {
+    if (!this.page) {
+      throw new Error("Page is falsy");
+    }
+
+    const handle = await this.page.waitForFunction(`(() => {
+      const ps = [...document.querySelectorAll("#chat-content > p")];
+      for (const p of ps) {
+        if (p.lastChild.textContent === "${id}") {
+          return p.querySelector("bdi")?.textContent;
+        }
+      }
+    })()`);
+
+    const name = await handle.jsonValue();
+    if (typeof name !== "string") {
+      throw new Error(`Player name "${name}" is not a string`);
     }
 
     return name;
@@ -234,9 +257,14 @@ export class Healer extends (EventEmitter as new () => TypedEventEmitter<Events>
 }
 
 function createRandomString(length: number) {
+  const max = 0x7e;
+  const min = 0x21;
+  const range = max - min + 1;
+
   let result = "";
   for (let i = 0; i < length; i++) {
-    result += Math.trunc(36 * Math.random()).toString(36);
+    result += String.fromCodePoint(Math.trunc(range * Math.random() + min));
   }
+
   return result;
 }
