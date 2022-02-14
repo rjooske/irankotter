@@ -17,6 +17,7 @@ export class Healer extends (EventEmitter as new () => TypedEventEmitter<Events>
 
   private page?: Page;
   private isHealing = false;
+  private isTyping = false;
 
   private readonly jumpInterval = setInterval(
     this.handleJumpInterval.bind(this),
@@ -113,7 +114,9 @@ export class Healer extends (EventEmitter as new () => TypedEventEmitter<Events>
       throw new Error("Page is falsy");
     }
 
-    await this.page.keyboard.type(`\n${message}\n`, { delay: 50 });
+    this.isTyping = true;
+    await this.page.keyboard.type(`\n${message}\n`, { delay: 5 });
+    this.isTyping = false;
   }
 
   private getPageWidth() {
@@ -189,7 +192,7 @@ export class Healer extends (EventEmitter as new () => TypedEventEmitter<Events>
   }
 
   private async handleJumpInterval() {
-    if (this.isHealing) {
+    if (this.isHealing || this.isTyping) {
       return;
     }
 
