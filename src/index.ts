@@ -4,6 +4,9 @@ import { Healer } from "./Healer";
 import { Server } from "./Server";
 
 interface Options {
+  headless: boolean;
+  url: string;
+  population: number;
   timeout: number;
 }
 
@@ -11,12 +14,29 @@ const options = parseArguments(argv.slice(2));
 
 function parseArguments(args: string[]) {
   try {
-    return {
+    const options = {
+      headless: false,
       timeout: 30,
-      ...commandLineArgs([{ name: "timeout", alias: "t", type: Number }], {
-        argv: args,
-      }),
-    } as Options;
+      ...commandLineArgs(
+        [
+          { name: "headless", alias: "h", type: Boolean },
+          { name: "url", alias: "u", type: String },
+          { name: "population", alias: "p", type: Number },
+          { name: "timeout", alias: "t", type: Number },
+        ],
+        {
+          argv: args,
+        }
+      ),
+    } as Partial<Options>;
+
+    if (options.headless) {
+      if (!options.url || !options.population) {
+        throw new Error();
+      }
+    }
+
+    return options as Options;
   } catch {
     console.error(
       `
@@ -35,18 +55,28 @@ Example, Set the timeout to 120 seconds:
 
 const healers: Healer[] = [];
 
-async function main() {
+function main() {
+  if (options.headless) {
+    mainWithoutHead();
+  } else {
+    mainWithHead();
+  }
+
+  console.log("Control + C to stop");
+}
+
+function mainWithHead() {
   const server = new Server(6565, "page", createHealerList);
   server.on("summon", handleSummon);
   server.on("kill", handleKill);
 
   console.log(
-    `
-Healer Control Panel running at http://localhost:${server.port}
-
-Control + C to stop
-    `.trim()
+    `Healer Control Panel running at http://localhost:${server.port}`
   );
+}
+
+function mainWithoutHead() {
+  handleSummon(options.url, options.population);
 }
 
 function createHealerList() {
