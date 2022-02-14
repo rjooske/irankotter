@@ -1,6 +1,7 @@
 document.querySelector("form").addEventListener("submit", async (event) => {
   event.preventDefault();
   await sendJSON("/summon", {
+    click: event.target.click.value,
     url: event.target.url.value,
     count: parseInt(event.target.count.value),
   });

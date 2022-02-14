@@ -12,6 +12,29 @@
     <header>Healer Control Panel</header>
     <form>
       <div style="grid-column: 1/3">
+        <label>Click</label>
+        <div class="round-left">
+          <div class="radio">
+            <input
+              type="radio"
+              name="click"
+              id="click-above"
+              value="above"
+              checked
+            />
+            <label for="click-above">Above</label>
+          </div>
+          <div class="radio">
+            <input type="radio" name="click" id="click-left" value="left" />
+            <label for="click-left">Left</label>
+          </div>
+          <div class="radio">
+            <input type="radio" name="click" id="click-right" value="right" />
+            <label for="click-right">Right</label>
+          </div>
+        </div>
+      </div>
+      <div style="grid-column: 1/3">
         <label for="url">URL</label>
         <input
           type="url"

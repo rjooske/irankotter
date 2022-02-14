@@ -29,7 +29,6 @@ header {
 form {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  grid-template-rows: repeat(2, 1fr);
   gap: 1em;
 }
 
@@ -61,6 +60,14 @@ form > div > label {
 
 form > div > label::after {
   content: ":";
+}
+
+form > div > div {
+  flex-grow: 1;
+  padding: 0 1.5rem;
+  font-size: 2.5rem;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
 }
 
 form > div > input {
@@ -129,6 +136,42 @@ p {
   align-self: flex-end;
   font-style: italic;
   opacity: 0.5;
+}
+
+.radio {
+  display: flex;
+  align-items: center;
+  gap: 0.25em;
+}
+
+.radio > input {
+  all: unset;
+  cursor: pointer;
+  width: 0.5em;
+  height: 0.5em;
+  border-radius: 100%;
+  background-color: currentColor;
+  display: grid;
+  place-items: center;
+}
+
+.radio > input::before {
+  content: "";
+  display: block;
+  width: 60%;
+  height: 60%;
+  border-radius: 100%;
+  background-color: var(--color-accent);
+  transform: scale(0);
+  transition: transform ease 50ms;
+}
+
+.radio > input:checked:before {
+  transform: scale(1);
+}
+
+.radio > label {
+  cursor: pointer;
 }
 
 .round-left {
