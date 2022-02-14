@@ -94,7 +94,10 @@ function createHealerList() {
       const label = healer.shipName ?? "Booting up...";
       return `
         <li class="round-left ${status}">
-          <span class="label">${label}</span>
+          <span class="label">
+            ${label}
+            <span class="subtle">${healer.playerName ?? ""}</span>
+          </span>
           <span class="kill" data-id="${healer.id}">Kill</span>
         </li>
       `;

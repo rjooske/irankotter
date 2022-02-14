@@ -134,8 +134,6 @@ li > .kill {
 
 p {
   align-self: flex-end;
-  font-style: italic;
-  opacity: 0.5;
 }
 
 .radio {
@@ -176,4 +174,10 @@ p {
 
 .round-left {
   border-radius: 100vmax 0 0 100vmax;
+}
+
+.subtle {
+  font-size: 1rem;
+  font-style: italic;
+  opacity: 0.5;
 }
