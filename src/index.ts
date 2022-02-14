@@ -5,6 +5,7 @@ import { Server } from "./Server";
 
 interface Options {
   headless: boolean;
+  click: string;
   url: string;
   population: number;
   timeout: number;
@@ -17,9 +18,10 @@ function parseArguments(args: string[]) {
     const options = {
       headless: false,
       timeout: 30,
-      ...commandLineArgs(
+      ...(commandLineArgs(
         [
           { name: "headless", alias: "h", type: Boolean },
+          { name: "click", alias: "c", type: String },
           { name: "url", alias: "u", type: String },
           { name: "population", alias: "p", type: Number },
           { name: "timeout", alias: "t", type: Number },
@@ -27,11 +29,13 @@ function parseArguments(args: string[]) {
         {
           argv: args,
         }
-      ),
-    } as Partial<Options>;
+      ) as Partial<Options>),
+    };
+
+    options.timeout *= 1000;
 
     if (options.headless) {
-      if (!options.url || !options.population) {
+      if (!options.click || !options.url || !options.population) {
         throw new Error();
       }
     }
@@ -76,7 +80,7 @@ function mainWithHead() {
 }
 
 function mainWithoutHead() {
-  handleSummon(options.url, options.population);
+  handleSummon(options.click, options.url, options.population);
 }
 
 function createHealerList() {
@@ -100,9 +104,9 @@ function createHealerList() {
   return `<ul>${lis}</ul>`;
 }
 
-function handleSummon(url: string, count: number) {
+function handleSummon(click: string, url: string, count: number) {
   for (let i = 0; i < count; i++) {
-    const healer = new Healer(url, options.timeout);
+    const healer = new Healer(click, url, options.timeout);
     healer.on("error", () => handleKill(healer.id));
     healer.join();
     healers.push(healer);

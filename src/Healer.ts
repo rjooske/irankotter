@@ -25,6 +25,7 @@ export class Healer extends (EventEmitter as new () => TypedEventEmitter<Events>
   );
 
   constructor(
+    private readonly click: string,
     private readonly url: string,
     private readonly defaultTimeout: number
   ) {
@@ -39,7 +40,7 @@ export class Healer extends (EventEmitter as new () => TypedEventEmitter<Events>
     });
 
     this.page = await browser.newPage();
-    this.page.setDefaultTimeout(this.defaultTimeout * 1000);
+    this.page.setDefaultTimeout(this.defaultTimeout);
     this.page.on("console", this.handleConsoleMessage.bind(this));
 
     const commandListener = new CommandListener(this.page);
@@ -58,9 +59,9 @@ export class Healer extends (EventEmitter as new () => TypedEventEmitter<Events>
       );
 
       this.shipName = await this.getShipName();
-      await this.sendChat("ready");
+      await this.sendChat(this.id);
 
-      await this.page.setViewport({ width: 1, height: 200 });
+      await this.page.setViewport({ width: 60, height: 200 });
       await this.hideSelectorAll("body > *:not(#game-container)");
 
       await commandListener.start();
@@ -115,7 +116,7 @@ export class Healer extends (EventEmitter as new () => TypedEventEmitter<Events>
     }
 
     this.isTyping = true;
-    await this.page.keyboard.type(`\n${message}\n`, { delay: 5 });
+    await this.page.keyboard.type(`\n${message}\n`, { delay: 10 });
     this.isTyping = false;
   }
 
@@ -139,7 +140,13 @@ export class Healer extends (EventEmitter as new () => TypedEventEmitter<Events>
 
     try {
       await this.page.waitForTimeout(HEAL_USE_DURATION * Math.random());
-      await this.page.mouse.move(0, 0);
+      if (this.click === "above") {
+        await this.page.mouse.move(this.getPageWidth() / 2, 0);
+      } else if (this.click === "left") {
+        await this.page.mouse.move(0, 70);
+      } else if (this.click === "right") {
+        await this.page.mouse.move(this.getPageWidth() - 1, 70);
+      }
       await this.page.mouse.down();
     } catch (error) {
       await this.error(error);
@@ -172,7 +179,6 @@ export class Healer extends (EventEmitter as new () => TypedEventEmitter<Events>
     if (!this.isHealing) {
       return;
     }
-    this.isHealing = false;
 
     if (!this.page) {
       return;

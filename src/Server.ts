@@ -6,7 +6,7 @@ import { join } from "path";
 import TypedEventEmitter from "typed-emitter";
 
 type Events = {
-  summon: (url: string, count: number) => void;
+  summon: (click: string, url: string, count: number) => void;
   kill: (id: string) => void;
 };
 
@@ -38,6 +38,12 @@ export class Server extends (EventEmitter as new () => TypedEventEmitter<Events>
   }
 
   private handleSummon(req: Request, res: Response) {
+    const click = req.body.click;
+    if (typeof click !== "string") {
+      res.sendStatus(400);
+      return;
+    }
+
     const url = req.body.url;
     if (typeof url !== "string") {
       res.sendStatus(400);
@@ -51,7 +57,7 @@ export class Server extends (EventEmitter as new () => TypedEventEmitter<Events>
     }
 
     res.sendStatus(200);
-    this.emit("summon", url, count);
+    this.emit("summon", click, url, count);
   }
 
   private handleKill(req: Request, res: Response) {
