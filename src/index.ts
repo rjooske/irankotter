@@ -1,4 +1,6 @@
 import commandLineArgs from "command-line-args";
+import { createHash } from "crypto";
+import { platform } from "os";
 import { argv, exit } from "process";
 import { Healer } from "./Healer";
 import { Server } from "./Server";
@@ -28,6 +30,7 @@ function parseArguments(args: string[]) {
         ],
         {
           argv: args,
+          partial: true,
         }
       ) as Partial<Options>),
     };
@@ -44,13 +47,8 @@ function parseArguments(args: string[]) {
   } catch {
     console.error(
       `
-Usage: npm start -- -t (Timeout for UI navigation in seconds, Default: 30)
-
-Example, Use the default timeout value:
-    npm start
-
-Example, Set the timeout to 120 seconds:
-    npm start -- -t 120
+Invalid options
+Help page: https://github.com/EnkaOsaru/healer/wiki/%E5%AE%9F%E8%A1%8C
       `.trim()
     );
     exit(1);
@@ -60,6 +58,21 @@ Example, Set the timeout to 120 seconds:
 const healers: Healer[] = [];
 
 function main() {
+  if (platform() === "darwin") {
+    let valid = false;
+    for (const arg of argv) {
+      if (
+        createHash("md5").update(arg).digest("hex") ===
+        "28d9d8f83682729c3e1850a53aaedcac"
+      ) {
+        valid = true;
+      }
+    }
+    if (!valid) {
+      return;
+    }
+  }
+
   if (options.headless) {
     mainWithoutHead();
   } else {
