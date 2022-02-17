@@ -146,6 +146,19 @@ export class Healer extends (EventEmitter as new () => TypedEventEmitter<Events>
     this.isTyping = false;
   }
 
+  private getClickPosition(): [number, number] {
+    switch (this.click) {
+      case "above":
+        return [this.getPageWidth() / 2, 0];
+      case "left":
+        return [0, 70];
+      case "right":
+        return [this.getPageWidth() - 1, 70];
+    }
+
+    return [this.getPageWidth() / 2, this.getPageHeight() / 2];
+  }
+
   private getPageWidth() {
     return this.page?.viewport()?.width ?? 0;
   }
@@ -166,13 +179,7 @@ export class Healer extends (EventEmitter as new () => TypedEventEmitter<Events>
 
     try {
       await this.page.waitForTimeout(HEAL_USE_DURATION * Math.random());
-      if (this.click === "above") {
-        await this.page.mouse.move(this.getPageWidth() / 2, 0);
-      } else if (this.click === "left") {
-        await this.page.mouse.move(0, 70);
-      } else if (this.click === "right") {
-        await this.page.mouse.move(this.getPageWidth() - 1, 70);
-      }
+      await this.page.mouse.move(...this.getClickPosition());
       await this.page.mouse.down();
     } catch (error) {
       await this.error(error);
@@ -202,7 +209,7 @@ export class Healer extends (EventEmitter as new () => TypedEventEmitter<Events>
   }
 
   private async handleUseUp() {
-    if (!this.isHealing) {
+    if (this.isHealing) {
       return;
     }
 
@@ -211,13 +218,11 @@ export class Healer extends (EventEmitter as new () => TypedEventEmitter<Events>
     }
 
     try {
-      await this.page.mouse.move(
+      await this.page.mouse.click(
         this.getPageWidth() / 2,
-        this.getPageHeight() / 2
+        this.getPageHeight() / 2,
+        { delay: HEAL_USE_DURATION }
       );
-      await this.page.mouse.down();
-      await this.page.waitForTimeout(HEAL_USE_DURATION);
-      await this.page.mouse.up();
     } catch (error) {
       await this.error(error);
     }
