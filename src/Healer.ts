@@ -27,6 +27,7 @@ export class Healer extends (EventEmitter as new () => TypedEventEmitter<Events>
   constructor(
     private readonly click: string,
     private readonly url: string,
+    private readonly headless: boolean,
     private readonly defaultTimeout: number
   ) {
     super();
@@ -35,7 +36,7 @@ export class Healer extends (EventEmitter as new () => TypedEventEmitter<Events>
   async join() {
     // This must be puppeteer.launch for some reason
     const browser = await puppeteer.launch({
-      headless: true,
+      headless: this.headless,
       defaultViewport: { width: 800, height: 600 },
     });
 
