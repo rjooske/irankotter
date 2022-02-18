@@ -12,7 +12,6 @@ type Events = {
 export class Healer extends (EventEmitter as new () => TypedEventEmitter<Events>) {
   readonly id = createRandomString(8);
 
-  playerName?: string;
   shipName?: string;
 
   private page?: Page;
@@ -60,15 +59,13 @@ export class Healer extends (EventEmitter as new () => TypedEventEmitter<Events>
       );
 
       this.shipName = await this.getShipName();
-      await this.sendChat("ready");
-      await this.page.waitForTimeout(1000);
-      await this.sendChat(`id: ${this.id}`);
-      this.playerName = await this.getPlayerName(this.id);
 
       await this.page.setViewport({ width: 60, height: 200 });
       await this.hideSelectorAll("body > *:not(#game-container)");
 
       await commandListener.start();
+
+      await this.sendChat("ready");
     } catch (error) {
       this.error(error);
     }
@@ -99,28 +96,6 @@ export class Healer extends (EventEmitter as new () => TypedEventEmitter<Events>
     const name = await handle.jsonValue();
     if (typeof name !== "string") {
       throw new Error(`Ship name "${name}" is not a string`);
-    }
-
-    return name;
-  }
-
-  private async getPlayerName(id: string) {
-    if (!this.page) {
-      throw new Error("Page is falsy");
-    }
-
-    const handle = await this.page.waitForFunction(`(() => {
-      const ps = [...document.querySelectorAll("#chat-content > p")];
-      for (const p of ps) {
-        if (p.textContent.includes("${id}")) {
-          return p.querySelector("bdi")?.textContent;
-        }
-      }
-    })()`);
-
-    const name = await handle.jsonValue();
-    if (typeof name !== "string") {
-      throw new Error(`Player name "${name}" is not a string`);
     }
 
     return name;

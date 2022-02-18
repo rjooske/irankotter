@@ -59,9 +59,9 @@ Help page: https://github.com/EnkaOsaru/healer/wiki/%E5%AE%9F%E8%A1%8C
 const healers: Healer[] = [];
 
 function main() {
-  if (process.platform === "darwin") {
-    return;
-  }
+  // if (process.platform === "darwin") {
+  //   return;
+  // }
 
   if (options.development) {
     mainDevelopment();
@@ -97,10 +97,7 @@ function createHealerList() {
       const label = healer.shipName ?? "Booting up...";
       return `
         <li class="round-left ${status}">
-          <span class="label">
-            ${label}
-            <span class="subtle">${healer.playerName ?? ""}</span>
-          </span>
+          <span class="label">${label}</span>
           <span class="kill" data-id="${healer.id}">Kill</span>
         </li>
       `;
