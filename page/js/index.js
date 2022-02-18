@@ -16,6 +16,22 @@ document.querySelectorAll(".kill").forEach((a) =>
   })
 );
 
+document.querySelector("#shutdown").addEventListener("click", async (event) => {
+  event.preventDefault();
+  await sendJSON("/shutdown");
+  location.reload();
+});
+
+document.querySelector("#kill-all").addEventListener("click", async (event) => {
+  event.preventDefault();
+  await Promise.all(
+    [...document.querySelectorAll(".kill")].map((a) =>
+      sendJSON("/kill", { id: a.dataset.id })
+    )
+  );
+  location.reload();
+});
+
 function sendJSON(url, json) {
   return fetch(url, {
     method: "POST",
