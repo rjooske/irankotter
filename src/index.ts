@@ -76,6 +76,7 @@ function mainProduction() {
   const server = new Server(6565, "page", createHealerList);
   server.on("summon", handleSummon);
   server.on("kill", handleKill);
+  server.on("shutdown", handleShutdown);
 
   console.log(
     `Healer Control Panel running at http://localhost:${server.port}`
@@ -125,6 +126,11 @@ function handleKill(id: string) {
       break;
     }
   }
+}
+
+function handleShutdown() {
+  console.log("Shutting down");
+  exit(0);
 }
 
 main();

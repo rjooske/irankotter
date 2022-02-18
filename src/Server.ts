@@ -8,6 +8,7 @@ import TypedEventEmitter from "typed-emitter";
 type Events = {
   summon: (click: string, url: string, count: number) => void;
   kill: (id: string) => void;
+  shutdown: () => void;
 };
 
 type CreateHealerList = () => string;
@@ -25,6 +26,7 @@ export class Server extends (EventEmitter as new () => TypedEventEmitter<Events>
     app.get("/", this.handleGetRoot.bind(this));
     app.post("/summon", this.handleSummon.bind(this));
     app.post("/kill", this.handleKill.bind(this));
+    app.post("/shutdown", this.handleShutdown.bind(this));
     app.use(express.static(rootPath));
     app.listen(port);
   }
@@ -69,5 +71,10 @@ export class Server extends (EventEmitter as new () => TypedEventEmitter<Events>
 
     res.sendStatus(200);
     this.emit("kill", id);
+  }
+
+  private handleShutdown(_: Request, res: Response) {
+    res.sendStatus(200);
+    this.emit("shutdown");
   }
 }
