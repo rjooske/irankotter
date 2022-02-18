@@ -1,3 +1,4 @@
+import { execSync } from "child_process";
 import commandLineArgs from "command-line-args";
 import { argv, exit } from "process";
 import { Healer } from "./Healer";
@@ -66,14 +67,28 @@ function main() {
   if (options.development) {
     mainDevelopment();
   } else {
-    mainProduction();
+    mainProduction(isOutdated());
   }
 
   console.log("Control + C to stop");
 }
 
-function mainProduction() {
-  const server = new Server(6565, "page", createHealerList);
+function isOutdated() {
+  try {
+    const output = execSync("git fetch --dry-run 2>&1");
+    return output.length > 0;
+  } catch {
+    return false;
+  }
+}
+
+function mainProduction(isOutdated: boolean) {
+  const server = new Server(
+    6565,
+    "page",
+    createHealerList,
+    createUpdateNotification.bind(undefined, isOutdated)
+  );
   server.on("summon", handleSummon);
   server.on("kill", handleKill);
   server.on("shutdown", handleShutdown);
@@ -106,6 +121,14 @@ function createHealerList() {
     .join("");
 
   return `<ul>${lis}</ul>`;
+}
+
+function createUpdateNotification(isOutdated: boolean) {
+  if (!isOutdated) {
+    return "";
+  }
+
+  return `<p id="update-notification">New version is available!</p>`;
 }
 
 function handleSummon(click: string, url: string, count: number) {

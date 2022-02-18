@@ -122,6 +122,15 @@ li > .kill {
   text-decoration: underline;
 }
 
+#update-notification {
+  position: fixed;
+  inset: 0 0 auto 0;
+  background-color: var(--color-accent);
+  display: grid;
+  place-content: center;
+  font-size: 2rem;
+}
+
 #bottom-buttons {
   display: flex;
   gap: 1rem;
@@ -129,10 +138,6 @@ li > .kill {
 
 #bottom-buttons > * {
   flex-grow: 1;
-}
-
-p {
-  align-self: flex-end;
 }
 
 button {

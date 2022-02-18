@@ -11,13 +11,14 @@ type Events = {
   shutdown: () => void;
 };
 
-type CreateHealerList = () => string;
+type StringProvider = () => string;
 
 export class Server extends (EventEmitter as new () => TypedEventEmitter<Events>) {
   constructor(
     readonly port: number,
     private readonly rootPath: string,
-    private readonly createHealerList: CreateHealerList
+    private readonly createHealerList: StringProvider,
+    private readonly createUpdateNotification: StringProvider
   ) {
     super();
 
@@ -35,6 +36,7 @@ export class Server extends (EventEmitter as new () => TypedEventEmitter<Events>
     res.send(
       readFileSync(join(this.rootPath, "index.html"))
         .toString()
+        .replace("__update_notification__", this.createUpdateNotification())
         .replace("__healers__", this.createHealerList())
     );
   }
