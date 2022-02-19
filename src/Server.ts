@@ -4,6 +4,7 @@ import express, { Request, Response } from "express";
 import { readFileSync } from "fs";
 import { join } from "path";
 import TypedEventEmitter from "typed-emitter";
+import { Healer } from "./Healer";
 
 type Events = {
   summon: (click: string, url: string, count: number) => void;
@@ -12,13 +13,14 @@ type Events = {
 };
 
 type StringProvider = () => string;
+type HealerLister = () => Healer[];
 
 export class Server extends (EventEmitter as new () => TypedEventEmitter<Events>) {
   constructor(
     readonly port: number,
     private readonly rootPath: string,
-    private readonly createHealerList: StringProvider,
-    private readonly createUpdateNotification: StringProvider
+    private readonly createUpdateNotification: StringProvider,
+    private readonly getHealers: HealerLister
   ) {
     super();
 
@@ -28,6 +30,7 @@ export class Server extends (EventEmitter as new () => TypedEventEmitter<Events>
     app.post("/summon", this.handleSummon.bind(this));
     app.post("/kill", this.handleKill.bind(this));
     app.post("/shutdown", this.handleShutdown.bind(this));
+    app.get("/healers", this.handleHealers.bind(this));
     app.use(express.static(rootPath));
     app.listen(port);
   }
@@ -37,7 +40,6 @@ export class Server extends (EventEmitter as new () => TypedEventEmitter<Events>
       readFileSync(join(this.rootPath, "index.html"))
         .toString()
         .replace("__update_notification__", this.createUpdateNotification())
-        .replace("__healers__", this.createHealerList())
     );
   }
 
@@ -78,5 +80,16 @@ export class Server extends (EventEmitter as new () => TypedEventEmitter<Events>
   private handleShutdown(_: Request, res: Response) {
     res.sendStatus(200);
     this.emit("shutdown");
+  }
+
+  private handleHealers(_: Request, res: Response) {
+    res.send(
+      JSON.stringify(
+        this.getHealers().map((healer) => ({
+          id: healer.id,
+          shipName: healer.shipName,
+        }))
+      )
+    );
   }
 }

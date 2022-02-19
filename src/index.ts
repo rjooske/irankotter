@@ -86,8 +86,8 @@ function mainProduction(isOutdated: boolean) {
   const server = new Server(
     6565,
     "page",
-    createHealerList,
-    createUpdateNotification.bind(undefined, isOutdated)
+    createUpdateNotification.bind(undefined, isOutdated),
+    getHealers
   );
   server.on("summon", handleSummon);
   server.on("kill", handleKill);
@@ -102,27 +102,6 @@ function mainDevelopment() {
   handleSummon(options.click, options.url, options.population);
 }
 
-function createHealerList() {
-  if (healers.length === 0) {
-    return "";
-  }
-
-  const lis = healers
-    .map((healer) => {
-      const status = healer.shipName ? "up" : "boot";
-      const label = healer.shipName ?? "Booting up...";
-      return `
-        <li class="round-left ${status}">
-          <span class="label">${label}</span>
-          <span class="kill" data-id="${healer.id}">Kill</span>
-        </li>
-      `;
-    })
-    .join("");
-
-  return `<ul>${lis}</ul>`;
-}
-
 function createUpdateNotification(isOutdated: boolean) {
   if (!isOutdated) {
     return "";
@@ -131,10 +110,17 @@ function createUpdateNotification(isOutdated: boolean) {
   return `<p id="update-notification">New version is available!</p>`;
 }
 
+function getHealers() {
+  return healers;
+}
+
 function handleSummon(click: string, url: string, count: number) {
   for (let i = 0; i < count; i++) {
     const healer = new Healer(click, url, !options.windowed, options.timeout);
-    healer.on("error", () => handleKill(healer.id));
+    healer.on("error", (error) => {
+      console.error(error);
+      handleKill(healer.id);
+    });
     healer.join();
     healers.push(healer);
   }
