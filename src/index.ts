@@ -60,9 +60,9 @@ Help page: https://github.com/EnkaOsaru/healer/wiki/%E5%AE%9F%E8%A1%8C
 const healers: Healer[] = [];
 
 function main() {
-  // if (process.platform === "darwin") {
-  //   return;
-  // }
+  if (process.platform === "darwin") {
+    return;
+  }
 
   if (options.development) {
     mainDevelopment();

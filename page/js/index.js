@@ -5,6 +5,7 @@ document.querySelector("form").addEventListener("submit", async (event) => {
     url: event.target.url.value,
     count: parseInt(event.target.count.value),
   });
+  event.target.querySelectorAll("input").forEach((input) => (input.value = ""));
   forceUpdate?.();
 });
 
