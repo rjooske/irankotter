@@ -1,4 +1,3 @@
-import { execSync } from "child_process";
 import commandLineArgs from "command-line-args";
 import { argv, exit } from "process";
 import { Healer } from "./Healer";
@@ -60,29 +59,20 @@ Help page: https://github.com/EnkaOsaru/healer/wiki/%E5%AE%9F%E8%A1%8C
 const healers: Healer[] = [];
 
 function main() {
-  if (process.platform === "darwin") {
-    return;
-  }
+  // if (process.platform === "darwin") {
+  //   return;
+  // }
 
   if (options.development) {
     mainDevelopment();
   } else {
-    mainProduction(isOutdated());
+    mainProduction();
   }
 
   console.log("Control + C to stop");
 }
 
-function isOutdated() {
-  try {
-    const output = execSync("git fetch --dry-run 2>&1");
-    return output.length > 0;
-  } catch {
-    return false;
-  }
-}
-
-function mainProduction(isOutdated: boolean) {
+function mainProduction() {
   const server = new Server(6565, "page", getHealers);
   server.on("summon", handleSummon);
   server.on("kill", handleKill);
