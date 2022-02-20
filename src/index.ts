@@ -83,12 +83,7 @@ function isOutdated() {
 }
 
 function mainProduction(isOutdated: boolean) {
-  const server = new Server(
-    6565,
-    "page",
-    createUpdateNotification.bind(undefined, isOutdated),
-    getHealers
-  );
+  const server = new Server(6565, "page", getHealers);
   server.on("summon", handleSummon);
   server.on("kill", handleKill);
   server.on("shutdown", handleShutdown);
@@ -100,14 +95,6 @@ function mainProduction(isOutdated: boolean) {
 
 function mainDevelopment() {
   handleSummon(options.click, options.url, options.population);
-}
-
-function createUpdateNotification(isOutdated: boolean) {
-  if (!isOutdated) {
-    return "";
-  }
-
-  return `<p id="update-notification">New version is available!</p>`;
 }
 
 function getHealers() {

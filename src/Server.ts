@@ -1,8 +1,6 @@
 import bodyParser from "body-parser";
 import { EventEmitter } from "events";
 import express, { Request, Response } from "express";
-import { readFileSync } from "fs";
-import { join } from "path";
 import TypedEventEmitter from "typed-emitter";
 import { Healer } from "./Healer";
 
@@ -12,35 +10,24 @@ type Events = {
   shutdown: () => void;
 };
 
-type StringProvider = () => string;
 type HealerLister = () => Healer[];
 
 export class Server extends (EventEmitter as new () => TypedEventEmitter<Events>) {
   constructor(
     readonly port: number,
-    private readonly rootPath: string,
-    private readonly createUpdateNotification: StringProvider,
+    readonly rootPath: string,
     private readonly getHealers: HealerLister
   ) {
     super();
 
     const app = express();
     app.use(bodyParser.json());
-    app.get("/", this.handleGetRoot.bind(this));
     app.post("/summon", this.handleSummon.bind(this));
     app.post("/kill", this.handleKill.bind(this));
     app.post("/shutdown", this.handleShutdown.bind(this));
     app.get("/healers", this.handleHealers.bind(this));
     app.use(express.static(rootPath));
     app.listen(port);
-  }
-
-  private handleGetRoot(_: Request, res: Response) {
-    res.send(
-      readFileSync(join(this.rootPath, "index.html"))
-        .toString()
-        .replace("__update_notification__", this.createUpdateNotification())
-    );
   }
 
   private handleSummon(req: Request, res: Response) {
