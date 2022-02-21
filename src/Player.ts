@@ -9,7 +9,7 @@ type Events = {
   error: (error: unknown) => void;
 };
 
-export class Healer extends (EventEmitter as new () => TypedEventEmitter<Events>) {
+export class Player extends (EventEmitter as new () => TypedEventEmitter<Events>) {
   readonly id = createRandomString(8);
 
   shipName?: string;

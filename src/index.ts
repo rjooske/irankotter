@@ -1,6 +1,6 @@
 import commandLineArgs from "command-line-args";
 import { argv, exit } from "process";
-import { Healer } from "./Player";
+import { Player } from "./Player";
 import { Server } from "./Server";
 
 interface Options {
@@ -56,7 +56,7 @@ Help page: https://github.com/EnkaOsaru/healer/wiki/%E5%AE%9F%E8%A1%8C
   }
 }
 
-const healers: Healer[] = [];
+const healers: Player[] = [];
 
 function main() {
   // if (process.platform === "darwin") {
@@ -93,7 +93,7 @@ function getHealers() {
 
 function handleSummon(click: string, url: string, count: number) {
   for (let i = 0; i < count; i++) {
-    const healer = new Healer(click, url, !options.windowed, options.timeout);
+    const healer = new Player(click, url, !options.windowed, options.timeout);
     healer.on("error", (error) => {
       console.error(error);
       handleKill(healer.id);
