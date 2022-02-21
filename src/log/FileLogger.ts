@@ -4,7 +4,7 @@ import { Logger } from "./Logger";
 export class FileLogger implements Logger {
   constructor(private readonly id: string, private readonly path: string) {}
 
-  log(s: string) {
+  log(s: any) {
     appendFile(
       this.path,
       [new Date().toISOString(), this.id, s].join(" "),
