@@ -1,6 +1,6 @@
 import commandLineArgs from "command-line-args";
 import { argv, exit } from "process";
-import { Healer } from "./Healer";
+import { Healer } from "./Player";
 import { Server } from "./Server";
 
 interface Options {

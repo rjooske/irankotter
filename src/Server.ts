@@ -2,7 +2,7 @@ import bodyParser from "body-parser";
 import { EventEmitter } from "events";
 import express, { Request, Response } from "express";
 import TypedEventEmitter from "typed-emitter";
-import { Healer } from "./Healer";
+import { Healer } from "./Player";
 
 type Events = {
   summon: (click: string, url: string, count: number) => void;
