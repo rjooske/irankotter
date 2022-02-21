@@ -1,6 +1,8 @@
 import { EventEmitter } from "events";
 import { Page } from "puppeteer";
 import TypedEmitter from "typed-emitter";
+import { Chat } from "./chat/Chat";
+import { ChatReader } from "./chat/ChatReader";
 
 type Events = {
   "heal-start": () => void;
@@ -15,59 +17,28 @@ const commandToEventName: { [key: string]: keyof Events } = {
 };
 
 export class CommandListener extends (EventEmitter as new () => TypedEmitter<Events>) {
-  constructor(private readonly page: Page) {
+  private readonly chatReader: ChatReader;
+
+  constructor(page: Page) {
     super();
+    this.chatReader = new ChatReader(page, this.handleChat.bind(this));
   }
 
   async start() {
-    const prefix = createRandomString(128);
-    await this.observeChat(prefix);
-    this.observeConsole(prefix);
+    await this.chatReader.start();
   }
 
-  private async observeChat(prefix: string) {
-    await this.page.evaluate(`
-      new MutationObserver((mutations) => {
-        for (const mutation of mutations) {
-          for (const node of mutation.addedNodes) {
-            const json = JSON.stringify({
-              role: node.querySelector("span").innerText,
-              message: node.lastChild.textContent,
-            });
-            console.log("${prefix}" + json);
-          }
-        }
-      }).observe(document.querySelector("#chat-content"), { childList: true });
-    `);
+  private handleChat(chat: Chat) {
+    if (chat.role !== "Captain") {
+      return;
+    }
+
+    const command = chat.text.toLowerCase();
+    const eventName = commandToEventName[command];
+    if (!eventName) {
+      return;
+    }
+
+    this.emit(eventName);
   }
-
-  private observeConsole(prefix: string) {
-    this.page.on("console", (event) => {
-      const text = event.text();
-      if (!text.startsWith(prefix)) {
-        return;
-      }
-
-      const { role, message } = JSON.parse(text.substring(prefix.length));
-      if (role !== "Captain") {
-        return;
-      }
-
-      const command = message.toLowerCase();
-      const eventName = commandToEventName[command];
-      if (!eventName) {
-        return;
-      }
-
-      this.emit(eventName);
-    });
-  }
-}
-
-function createRandomString(length: number) {
-  let result = "";
-  for (let i = 0; i < length; i++) {
-    result += Math.trunc(36 * Math.random()).toString(36);
-  }
-  return result;
 }
