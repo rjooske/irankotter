@@ -7,7 +7,7 @@ export class FileLogger implements Logger {
   log(...args: any[]) {
     appendFile(
       this.path,
-      [new Date().toISOString(), this.id, ...args].join(" "),
+      [new Date().toISOString(), this.id, ...args].join(" ") + "\n",
       (error) => {
         console.error(error);
       }
