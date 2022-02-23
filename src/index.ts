@@ -1,6 +1,5 @@
 import commandLineArgs from "command-line-args";
 import { argv, exit } from "process";
-import { HealerClickDirection } from "./heal/HealerClickDirection";
 import { BotManager } from "./main/bot/BotManager";
 import { Player } from "./Player";
 import { Server } from "./Server";
@@ -95,8 +94,12 @@ function getHealers() {
 }
 
 function handleSummon(click: string, url: string, count: number) {
+  if (click !== "above" && click !== "left" && click !== "right") {
+    return;
+  }
+
   for (let i = 0; i < count; i++) {
-    botManager.createHealer(url, click as HealerClickDirection);
+    botManager.createHealer(url, click);
   }
 }
 
