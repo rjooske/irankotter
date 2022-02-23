@@ -18,17 +18,17 @@ export class BotManager {
     const page = await browser.newPage();
 
     const id = createRandomString(8);
-    const errorReceiver: ErrorReceiver = async () => {
+    const logger = new ConsoleLogger(id);
+    const jumper = new Jumper(page, () => true, logger);
+    const errorReceiver: ErrorReceiver = (error) => {
       this.remove(id);
-      try {
-        await browser.close();
-      } catch {}
+      jumper.stop();
+      logger.log(error);
+      browser.close().catch(logger.log);
     };
 
-    const logger = new ConsoleLogger(id);
-    const joiner = new Joiner(page, url, logger);
+    const joiner = new Joiner(page, url, errorReceiver, logger);
     const healer = new Healer(page, clickDirection, errorReceiver, logger);
-    const jumper = new Jumper(page, () => true, logger);
     await joiner.join();
     await healer.start();
 

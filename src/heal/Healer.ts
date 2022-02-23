@@ -43,7 +43,6 @@ export class Healer {
       }
     } catch (error) {
       this.errorReceiver(error);
-      this.logger.log(error);
     }
   }
 

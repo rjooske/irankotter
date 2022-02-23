@@ -1,4 +1,5 @@
-import { Page } from "puppeteer";
+import { ConsoleMessage, Page } from "puppeteer";
+import { ErrorReceiver } from "../error/ErrorReceiver";
 import { Logger } from "../log/Logger";
 import { JoinerState } from "./JoinerState";
 
@@ -9,8 +10,11 @@ export class Joiner {
   constructor(
     private readonly page: Page,
     private readonly url: string,
+    private readonly errorReceiver: ErrorReceiver,
     private readonly logger: Logger
-  ) {}
+  ) {
+    this.page.on("console", this.handleConsoleMessage.bind(this));
+  }
 
   async join() {
     try {
@@ -39,8 +43,13 @@ export class Joiner {
       await setPageHeight(this.page, 200);
       await hideSelectorAll(this.page, "body > *:not(#game-container)");
     } catch (error) {
-      this.logger.log(error);
-      return;
+      this.errorReceiver(error);
+    }
+  }
+
+  private handleConsoleMessage(message: ConsoleMessage) {
+    if (message.text() === "[[drednot dead]]") {
+      this.errorReceiver(new Error("Drednot died"));
     }
   }
 }
