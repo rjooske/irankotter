@@ -1,5 +1,7 @@
 import commandLineArgs from "command-line-args";
 import { argv, exit } from "process";
+import { HealerClickDirection } from "./heal/HealerClickDirection";
+import { BotManager } from "./main/bot/BotManager";
 import { Player } from "./Player";
 import { Server } from "./Server";
 
@@ -57,6 +59,7 @@ Help page: https://github.com/EnkaOsaru/healer/wiki/%E5%AE%9F%E8%A1%8C
 }
 
 const healers: Player[] = [];
+const botManager = new BotManager();
 
 function main() {
   // if (process.platform === "darwin") {
@@ -93,13 +96,7 @@ function getHealers() {
 
 function handleSummon(click: string, url: string, count: number) {
   for (let i = 0; i < count; i++) {
-    const healer = new Player(click, url, !options.windowed, options.timeout);
-    healer.on("error", (error) => {
-      console.error(error);
-      handleKill(healer.id);
-    });
-    healer.join();
-    healers.push(healer);
+    botManager.createHealer(url, click as HealerClickDirection);
   }
 }
 
