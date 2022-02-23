@@ -1,6 +1,7 @@
 import { Page } from "puppeteer";
 import { Chat } from "../chat/Chat";
 import { ChatReader } from "../chat/ChatReader";
+import { ErrorReceiver } from "../error/ErrorReceiver";
 import { Logger } from "../log/Logger";
 import { HealerClickDirection } from "./HealerClickDirection";
 
@@ -13,30 +14,36 @@ export class Healer {
   constructor(
     private readonly page: Page,
     private readonly clickDirection: HealerClickDirection,
+    private readonly errorReceiver: ErrorReceiver,
     private readonly logger: Logger
   ) {
     this.chatReader = new ChatReader(page, this.handleChat.bind(this));
   }
 
   async start() {
-    this.chatReader.start();
+    await this.chatReader.start();
   }
 
-  private handleChat(chat: Chat) {
+  private async handleChat(chat: Chat) {
     if (chat.role !== "Captain") {
       return;
     }
 
-    switch (chat.text.trim().toLowerCase()) {
-      case "heal":
-        this.handleHeal();
-        break;
-      case "no heal":
-        this.handleNoHeal();
-        break;
-      case "use up":
-        this.handleUseUp();
-        break;
+    try {
+      switch (chat.text.trim().toLowerCase()) {
+        case "heal":
+          await this.handleHeal();
+          break;
+        case "no heal":
+          await this.handleNoHeal();
+          break;
+        case "use up":
+          await this.handleUseUp();
+          break;
+      }
+    } catch (error) {
+      this.errorReceiver(error);
+      this.logger.log(error);
     }
   }
 
@@ -45,16 +52,11 @@ export class Healer {
       return;
     }
 
-    try {
-      await this.page.waitForTimeout(SHIELD_USE_DURATION * Math.random());
-      await this.page.mouse.move(
-        ...getClickPosition(this.page, this.clickDirection)
-      );
-      await this.page.mouse.down({ button: "left" });
-    } catch (error) {
-      this.logger.log(error);
-      return;
-    }
+    await this.page.waitForTimeout(SHIELD_USE_DURATION * Math.random());
+    await this.page.mouse.move(
+      ...getClickPosition(this.page, this.clickDirection)
+    );
+    await this.page.mouse.down({ button: "left" });
 
     this.isHealing = true;
     this.logger.log(`start healing, click "${this.clickDirection}"`);
@@ -65,17 +67,12 @@ export class Healer {
       return;
     }
 
-    try {
-      await this.page.mouse.up({ button: "left" });
-      await this.page.mouse.click(
-        getPageWidth(this.page) / 2,
-        getPageHeight(this.page) / 2,
-        { button: "right", delay: 1000 }
-      );
-    } catch (error) {
-      this.logger.log(error);
-      return;
-    }
+    await this.page.mouse.up({ button: "left" });
+    await this.page.mouse.click(
+      getPageWidth(this.page) / 2,
+      getPageHeight(this.page) / 2,
+      { button: "right", delay: 1000 }
+    );
 
     this.isHealing = false;
     this.logger.log("stop healing");
@@ -86,16 +83,11 @@ export class Healer {
       return;
     }
 
-    try {
-      await this.page.mouse.click(
-        getPageWidth(this.page) / 2,
-        getPageHeight(this.page) / 2,
-        { button: "left", delay: SHIELD_USE_DURATION }
-      );
-    } catch (error) {
-      this.logger.log(error);
-      return;
-    }
+    await this.page.mouse.click(
+      getPageWidth(this.page) / 2,
+      getPageHeight(this.page) / 2,
+      { button: "left", delay: SHIELD_USE_DURATION }
+    );
 
     this.logger.log("use up the item");
   }
