@@ -89,7 +89,7 @@ export class Healer {
       { button: "left", delay: SHIELD_USE_DURATION }
     );
 
-    this.logger.log("use up the item");
+    this.logger.log("use up item");
   }
 }
 
