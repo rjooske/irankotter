@@ -1,33 +1,45 @@
 import { Page } from "puppeteer";
-import { Logger } from "../log/Logger";
-import { JumperCanJump } from "./JumperCanJump";
+import { ErrorReceiver } from "../error/ErrorReceiver";
 
 export class Jumper {
-  private readonly interval = setInterval(
-    this.handleInterval.bind(this),
-    10 * 1000
-  );
+  private isJumping = false;
+  private isClosed = false;
 
   constructor(
     private readonly page: Page,
-    private readonly canJump: JumperCanJump,
-    private readonly logger: Logger
-  ) {}
+    private readonly errorReceiver: ErrorReceiver
+  ) {
+    this.loop();
+  }
 
-  private async handleInterval() {
-    if (!this.canJump()) {
-      return;
-    }
+  enable() {
+    this.isJumping = true;
+  }
 
-    try {
-      await this.page.keyboard.press("Space", { delay: 1000 });
-    } catch (error) {
-      this.logger.log(error);
-      return;
+  disable() {
+    this.isJumping = false;
+  }
+
+  close() {
+    this.isClosed = true;
+  }
+
+  private async loop() {
+    while (!this.isClosed) {
+      if (this.isJumping) {
+        await this.jump();
+        await this.page.waitForTimeout(10 * 1000);
+      } else {
+        await this.page.waitForTimeout(1000);
+      }
     }
   }
 
-  stop() {
-    clearInterval(this.interval);
+  private async jump() {
+    try {
+      await this.page.keyboard.press("Space", { delay: 1000 });
+    } catch (error) {
+      this.errorReceiver(error);
+    }
   }
 }

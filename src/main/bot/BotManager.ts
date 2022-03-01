@@ -19,16 +19,33 @@ export class BotManager {
 
     const id = createRandomString(8);
     const logger = new ConsoleLogger(id);
-    const jumper = new Jumper(page, () => true, logger);
-    const errorReceiver: ErrorReceiver = (error) => {
-      this.remove(id);
-      jumper.stop();
-      logger.log(error);
-      browser.close().catch(logger.log);
+    const errorReceiver: ErrorReceiver = async (error) => {
+      try {
+        this.remove(id);
+        jumper.close();
+        logger.log(error);
+        await browser.close();
+      } catch (error) {
+        logger.log(error);
+      }
     };
 
+    const jumper = new Jumper(page, errorReceiver);
     const joiner = new Joiner(page, url, errorReceiver, logger);
-    const healer = new Healer(page, clickDirection, errorReceiver, logger);
+    const healer = new Healer(
+      page,
+      clickDirection,
+      (state) => {
+        switch (state) {
+          case "idle":
+            jumper.disable();
+          case "healing":
+            jumper.enable();
+        }
+      },
+      errorReceiver,
+      logger
+    );
     await joiner.join();
     await healer.start();
 
