@@ -4,16 +4,19 @@ import { ChatReader } from "../chat/ChatReader";
 import { ErrorReceiver } from "../error/ErrorReceiver";
 import { Logger } from "../log/Logger";
 import { HealerClickDirection } from "./HealerClickDirection";
+import { HealerState } from "./HealerState";
+import { HealerStateChangeReceiver } from "./HealerStateChangeReceiver";
 
 const SHIELD_USE_DURATION = 2000;
 
 export class Healer {
   private readonly chatReader: ChatReader;
-  isHealing = false;
+  private state: HealerState = "idle";
 
   constructor(
     private readonly page: Page,
     private readonly clickDirection: HealerClickDirection,
+    private readonly stateChangeReceiver: HealerStateChangeReceiver,
     private readonly errorReceiver: ErrorReceiver,
     private readonly logger: Logger
   ) {
@@ -47,7 +50,7 @@ export class Healer {
   }
 
   private async handleHeal() {
-    if (this.isHealing) {
+    if (this.state !== "idle") {
       return;
     }
 
@@ -57,12 +60,12 @@ export class Healer {
     );
     await this.page.mouse.down({ button: "left" });
 
-    this.isHealing = true;
+    this.setState("healing");
     this.logger.log(`start healing, click "${this.clickDirection}"`);
   }
 
   private async handleNoHeal() {
-    if (!this.isHealing) {
+    if (this.state !== "healing") {
       return;
     }
 
@@ -73,12 +76,12 @@ export class Healer {
       { button: "right", delay: 1000 }
     );
 
-    this.isHealing = false;
+    this.setState("idle");
     this.logger.log("stop healing");
   }
 
   private async handleUseUp() {
-    if (this.isHealing) {
+    if (this.state !== "idle") {
       return;
     }
 
@@ -89,6 +92,11 @@ export class Healer {
     );
 
     this.logger.log("use up item");
+  }
+
+  private setState(state: HealerState) {
+    this.state = state;
+    this.stateChangeReceiver(state);
   }
 }
 
