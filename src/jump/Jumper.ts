@@ -28,9 +28,9 @@ export class Jumper {
     while (!this.isClosed) {
       if (this.isJumping) {
         await this.jump();
-        await this.page.waitForTimeout(10 * 1000);
+        await sleep(10 * 1000);
       } else {
-        await this.page.waitForTimeout(1000);
+        await sleep(1000);
       }
     }
   }
@@ -42,4 +42,8 @@ export class Jumper {
       this.errorReceiver(error);
     }
   }
+}
+
+function sleep(duration: number) {
+  return new Promise<void>((res) => setTimeout(res, duration));
 }
