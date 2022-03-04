@@ -3,6 +3,7 @@ import { Chat } from "../chat/Chat";
 import { ChatReader } from "../chat/ChatReader";
 import { ErrorReceiver } from "../error/ErrorReceiver";
 import { Logger } from "../log/Logger";
+import { getPageHeight, getPageWidth } from "../utility/puppeteer";
 import { HealerClickDirection } from "./HealerClickDirection";
 import { HealerState } from "./HealerState";
 import { HealerStateChangeReceiver } from "./HealerStateChangeReceiver";
@@ -98,14 +99,6 @@ export class Healer {
     this.state = state;
     this.stateChangeReceiver(state);
   }
-}
-
-function getPageWidth(page: Page) {
-  return page.viewport()?.width ?? 0;
-}
-
-function getPageHeight(page: Page) {
-  return page.viewport()?.height ?? 0;
 }
 
 function getClickPosition(

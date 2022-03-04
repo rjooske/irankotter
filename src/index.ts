@@ -4,7 +4,6 @@ import { join } from "path";
 import { argv, cwd, exit } from "process";
 import { ConsoleLogger } from "./log/ConsoleLogger";
 import { BotManager } from "./main/bot/BotManager";
-import { Player } from "./Player";
 import { Server } from "./server/Server";
 
 interface Options {
@@ -60,7 +59,6 @@ Help page: https://github.com/EnkaOsaru/healer/wiki/%E5%AE%9F%E8%A1%8C
   }
 }
 
-const healers: Player[] = [];
 const botManager = new BotManager();
 
 async function main() {
@@ -156,17 +154,6 @@ function handleSummon(click: string, url: string, count: number) {
 
   for (let i = 0; i < count; i++) {
     botManager.createHealer(url, click);
-  }
-}
-
-function handleKill(id: string) {
-  for (let i = 0; i < healers.length; i++) {
-    const healer = healers[i];
-    if (healer.id === id) {
-      healer.close();
-      healers.splice(i, 1);
-      break;
-    }
   }
 }
 
