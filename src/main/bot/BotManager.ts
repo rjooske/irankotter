@@ -36,22 +36,38 @@ export class BotManager {
       page,
       clickDirection,
       (state) => {
-        switch (state) {
-          case "idle":
-            jumper.disable();
-          case "healing":
-            jumper.enable();
+        if (state === "idle") {
+          jumper.enable();
+        } else if (state === "healing") {
+          jumper.disable();
         }
       },
       errorReceiver,
       logger
     );
-    await joiner.join();
-    await healer.start();
 
-    this.bots.push({ id, browser });
+    this.bots.push({ id, browser, joiner, jumper, logger });
+
+    (async () => {
+      await joiner.join();
+      await healer.start();
+      jumper.enable();
+    })();
 
     return id;
+  }
+
+  async kill(id: string) {
+    const bot = this.bots.find((e) => e.id === id);
+    if (!bot) {
+      return;
+    }
+
+    bot.jumper.close();
+    await bot.browser.close();
+
+    bot.logger.log("killed");
+    this.remove(id);
   }
 
   private remove(id: string) {
@@ -61,5 +77,9 @@ export class BotManager {
         break;
       }
     }
+  }
+
+  getBots() {
+    return this.bots;
   }
 }

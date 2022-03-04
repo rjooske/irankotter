@@ -39,7 +39,7 @@ async function updateHealerElements() {
   const ul = document.querySelector("ul");
 
   while (true) {
-    const response = await fetch("/healers");
+    const response = await fetch("/healers", { method: "POST" });
     const healers = await response.json();
     for (const child of [...ul.children]) {
       child.remove();
