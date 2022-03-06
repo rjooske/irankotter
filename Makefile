@@ -9,6 +9,6 @@ build_server:
 dev: build
 	npm start -- -d -c above -u https://test.drednot.io/invite/IP9ejRouBRKmDrMXcjYiq9HO -p 1
 
-.PHONY: prod
-prod: build
+.PHONY: run
+run: build
 	npm start

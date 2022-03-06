@@ -136,12 +136,14 @@ async function mainProduction() {
       },
     ],
     (error) => console.error(error),
-    new ConsoleLogger("server  ")
+    new ConsoleLogger("server")
   );
 
   const port = 6565;
   const httpsServer = createSecureServer(app);
   await new Promise<void>((res) => httpsServer.listen(port, res));
+
+  console.log(`Healer Control Panel running at https://localhost:${port}`);
 }
 
 function createSecureServer(app: Application) {
