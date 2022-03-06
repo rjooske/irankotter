@@ -1,5 +1,7 @@
 import commandLineArgs from "command-line-args";
-import express from "express";
+import express, { Application } from "express";
+import { readFileSync } from "fs";
+import { createServer } from "https";
 import { join } from "path";
 import { argv, cwd, exit } from "process";
 import { ConsoleLogger } from "./log/ConsoleLogger";
@@ -138,9 +140,14 @@ async function mainProduction() {
   );
 
   const port = 6565;
-  await new Promise<void>((res) => app.listen(port, res));
+  const httpsServer = createSecureServer(app);
+  await new Promise<void>((res) => httpsServer.listen(port, res));
+}
 
-  console.log(`Healer Control Panel running at http://localhost:${port}`);
+function createSecureServer(app: Application) {
+  const key = readFileSync("cert/localhost/localhost.decrypted.key").toString();
+  const cert = readFileSync("cert/localhost/localhost.crt").toString();
+  return createServer({ key, cert }, app);
 }
 
 function mainDevelopment() {
