@@ -1,3 +1,4 @@
+import { sleep } from "../../utility/promise";
 import { DrednotBot } from "../drednot/DrednotBot";
 import { DrednotChat } from "../drednot/DrednotChat";
 import { ErrorReceiver } from "../error/ErrorReceiver";
@@ -5,6 +6,7 @@ import { Logger } from "../log/Logger";
 import { MouseEventListener } from "../mouse/MouseEventListener";
 import { MouseService } from "../mouse/MouseService";
 
+// TODO: This certainly shouldn't be in the domain layer
 export class TurretOperator {
   private readonly mouseEventListener: MouseEventListener = {
     onMouseMove: this.onMouseMove.bind(this),
@@ -25,22 +27,63 @@ export class TurretOperator {
     mouseService.addEventListener(this.mouseEventListener);
   }
 
-  private onDrednotChat(chat: DrednotChat) {
+  private async onDrednotChat(chat: DrednotChat) {
     if (chat.role !== "Captain") {
       return;
     }
 
-    switch (chat.text.trim().toLowerCase()) {
+    try {
+      switch (chat.text.trim().toLowerCase()) {
+        case "grab":
+          await this.handleGrab();
+          break;
+        case "release":
+          await this.handleRelease();
+          break;
+      }
+    } catch (error) {
+      this.errorReceiver(error);
     }
+  }
+
+  private async handleGrab() {
+    await this.drednotBot.moveMouse(0, 0); // FIXME: Figure out where to click
+    await this.drednotBot.pressMouseButton();
+    await sleep(1000);
+    await this.drednotBot.releaseMouseButton();
+    this.logger("grabbed");
+  }
+
+  private async handleRelease() {
+    await this.drednotBot.jump(); // FIXME: Maybe repurposing jump() is not a good idea
+    this.logger("released");
   }
 
   private onDrednotDead() {
     this.mouseService.removeEventListener(this.mouseEventListener);
   }
 
-  private onMouseMove(x: number, y: number) {}
+  private async onMouseMove(x: number, y: number) {
+    try {
+      await this.drednotBot.moveMouse(x, y); // FIXME: Is the coordinate normalized?
+    } catch (error) {
+      this.errorReceiver(error);
+    }
+  }
 
-  private onMouseButtonDown() {}
+  private async onMouseButtonDown() {
+    try {
+      await this.drednotBot.pressMouseButton();
+    } catch (error) {
+      this.errorReceiver(error);
+    }
+  }
 
-  private onMouseButtonUp() {}
+  private async onMouseButtonUp() {
+    try {
+      await this.drednotBot.releaseMouseButton();
+    } catch (error) {
+      this.errorReceiver(error);
+    }
+  }
 }
