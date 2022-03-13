@@ -1,10 +1,10 @@
-import { sleep } from "../../utility/promise";
-import { DrednotBot } from "../drednot/DrednotBot";
-import { DrednotChat } from "../drednot/DrednotChat";
-import { ErrorReceiver } from "../error/ErrorReceiver";
-import { Logger } from "../log/Logger";
-import { MouseEventListener } from "../mouse/MouseEventListener";
-import { MouseService } from "../mouse/MouseService";
+import { DrednotBot } from "../domain/drednot/DrednotBot";
+import { DrednotChat } from "../domain/drednot/DrednotChat";
+import { ErrorReceiver } from "../domain/error/ErrorReceiver";
+import { Logger } from "../domain/log/Logger";
+import { MouseEventListener } from "../domain/mouse/MouseEventListener";
+import { MouseService } from "../domain/mouse/MouseService";
+import { sleep } from "../utility/promise";
 
 // TODO: This certainly shouldn't be in the domain layer
 export class TurretOperator {
