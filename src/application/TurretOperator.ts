@@ -62,6 +62,7 @@ export class TurretOperator {
 
   private onDrednotDead() {
     this.mouseService.removeEventListener(this.mouseEventListener);
+    this.errorReceiver(new Error("Drednot died"));
   }
 
   private async onMouseMove(event: MouseMoveEvent) {
