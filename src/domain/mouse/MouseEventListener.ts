@@ -1,5 +1,7 @@
+import { MouseMoveEvent } from "./MouseMoveEvent";
+
 export interface MouseEventListener {
-  onMouseMove(x: number, y: number): void;
+  onMouseMove(event: MouseMoveEvent): void;
   onMouseButtonDown(): void;
   onMouseButtonUp(): void;
 }

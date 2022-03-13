@@ -5,5 +5,6 @@ export interface DrednotBot {
   pressMouseButton(): Promise<void>;
   releaseMouseButton(): Promise<void>;
   jump(): Promise<void>;
+  setScreenSize(width: number, height: number): Promise<void>;
   setEventListener(listener: DrednotBotEventListener): void;
 }

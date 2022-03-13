@@ -3,10 +3,10 @@ import { DrednotChat } from "../domain/drednot/DrednotChat";
 import { ErrorReceiver } from "../domain/error/ErrorReceiver";
 import { Logger } from "../domain/log/Logger";
 import { MouseEventListener } from "../domain/mouse/MouseEventListener";
+import { MouseMoveEvent } from "../domain/mouse/MouseMoveEvent";
 import { MouseService } from "../domain/mouse/MouseService";
 import { sleep } from "../utility/promise";
 
-// TODO: This certainly shouldn't be in the domain layer
 export class TurretOperator {
   private readonly mouseEventListener: MouseEventListener = {
     onMouseMove: this.onMouseMove.bind(this),
@@ -20,6 +20,7 @@ export class TurretOperator {
     private readonly errorReceiver: ErrorReceiver,
     private readonly logger: Logger
   ) {
+    drednotBot.setScreenSize(200, 200).catch(errorReceiver);
     drednotBot.setEventListener({
       onDrednotChat: this.onDrednotChat.bind(this),
       onDrednotDead: this.onDrednotDead.bind(this),
@@ -47,7 +48,7 @@ export class TurretOperator {
   }
 
   private async handleGrab() {
-    await this.drednotBot.moveMouse(0, 0); // FIXME: Figure out where to click
+    await this.drednotBot.moveMouse(100, 150);
     await this.drednotBot.pressMouseButton();
     await sleep(1000);
     await this.drednotBot.releaseMouseButton();
@@ -55,7 +56,7 @@ export class TurretOperator {
   }
 
   private async handleRelease() {
-    await this.drednotBot.jump(); // FIXME: Maybe repurposing jump() is not a good idea
+    await this.drednotBot.jump(); // TODO: Maybe repurposing jump() is not a good idea
     this.logger("released");
   }
 
@@ -63,9 +64,9 @@ export class TurretOperator {
     this.mouseService.removeEventListener(this.mouseEventListener);
   }
 
-  private async onMouseMove(x: number, y: number) {
+  private async onMouseMove(event: MouseMoveEvent) {
     try {
-      await this.drednotBot.moveMouse(x, y); // FIXME: Is the coordinate normalized?
+      await this.drednotBot.moveMouse(event.x, event.y);
     } catch (error) {
       this.errorReceiver(error);
     }
