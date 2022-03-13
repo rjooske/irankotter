@@ -66,8 +66,14 @@ export class TurretOperator {
   }
 
   private async onMouseMove(event: MouseMoveEvent) {
+    let x = event.x / event.screenWidth - 0.5;
+    let y = event.y / event.screenHeight - 0.5;
+    const r = Math.sqrt(x ** 2 + y ** 2) || 1;
+    x = 50 * (x / r) + 100;
+    y = 50 * (y / r) + 100;
+
     try {
-      await this.drednotBot.moveMouse(event.x, event.y);
+      await this.drednotBot.moveMouse(x, y);
     } catch (error) {
       this.errorReceiver(error);
     }
