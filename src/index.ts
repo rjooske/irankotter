@@ -177,5 +177,7 @@ import { MouseService } from "./infrastructure/mouse/MouseService";
     mouseService,
     (log) => console.log(log)
   );
-  await turretOperatorController.create("lorem");
+  await turretOperatorController.create(
+    "https://test.drednot.io/invite/IP9ejRouBRKmDrMXcjYiq9HO"
+  );
 })();

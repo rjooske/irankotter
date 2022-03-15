@@ -6,7 +6,7 @@ import { MouseService } from "../domain/mouse/MouseService";
 import { DrednotBot } from "../infrastructure/drednot/DrednotBot";
 
 export class TurretOperatorController {
-  readonly operators: TurretOperator[] = [];
+  private readonly operators: TurretOperator[] = [];
 
   constructor(
     private readonly mouseService: MouseService,

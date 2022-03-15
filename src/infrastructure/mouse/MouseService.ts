@@ -21,11 +21,11 @@ export class MouseService implements domain.MouseService {
     }, 50);
   }
 
-  addEventListener(listener: MouseEventListener): void {
+  addEventListener(listener: MouseEventListener) {
     this.listeners.push(listener);
   }
 
-  removeEventListener(listener: MouseEventListener): void {
+  removeEventListener(listener: MouseEventListener) {
     for (let i = 0; i < this.listeners.length; i++) {
       if (this.listeners[i] === listener) {
         this.listeners.splice(i, 1);
