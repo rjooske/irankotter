@@ -8,7 +8,7 @@
 // import { BotManager } from "./main/bot/BotManager";
 // import { Server } from "./server/Server";
 
-import { TurretOperatorController } from "./controller/TurretOperatorController";
+import { TurretOperatorController } from "./controller/turret/TurretOperatorController";
 import { MouseService } from "./infrastructure/mouse/MouseService";
 
 // interface Options {

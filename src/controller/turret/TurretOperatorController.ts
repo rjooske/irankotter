@@ -1,9 +1,9 @@
 import puppeteer from "puppeteer";
-import { TurretOperator } from "../application/TurretOperator";
-import { ErrorReceiver } from "../domain/error/ErrorReceiver";
-import { Logger } from "../domain/log/Logger";
-import { MouseService } from "../domain/mouse/MouseService";
-import { DrednotBot } from "../infrastructure/drednot/DrednotBot";
+import { TurretOperator } from "../../application/turret/TurretOperator";
+import { ErrorReceiver } from "../../domain/error/ErrorReceiver";
+import { Logger } from "../../domain/log/Logger";
+import { MouseService } from "../../domain/mouse/MouseService";
+import { DrednotBot } from "../../infrastructure/drednot/DrednotBot";
 
 export class TurretOperatorController {
   private readonly operators: TurretOperator[] = [];

@@ -1,11 +1,11 @@
-import { DrednotBot } from "../domain/drednot/DrednotBot";
-import { DrednotChat } from "../domain/drednot/DrednotChat";
-import { ErrorReceiver } from "../domain/error/ErrorReceiver";
-import { Logger } from "../domain/log/Logger";
-import { MouseEventListener } from "../domain/mouse/MouseEventListener";
-import { MouseMoveEvent } from "../domain/mouse/MouseMoveEvent";
-import { MouseService } from "../domain/mouse/MouseService";
-import { sleep } from "../utility/promise";
+import { DrednotBot } from "../../domain/drednot/DrednotBot";
+import { DrednotChat } from "../../domain/drednot/DrednotChat";
+import { ErrorReceiver } from "../../domain/error/ErrorReceiver";
+import { Logger } from "../../domain/log/Logger";
+import { MouseEventListener } from "../../domain/mouse/MouseEventListener";
+import { MouseMoveEvent } from "../../domain/mouse/MouseMoveEvent";
+import { MouseService } from "../../domain/mouse/MouseService";
+import { sleep } from "../../utility/promise";
 
 export class TurretOperator {
   private readonly mouseEventListener: MouseEventListener = {
@@ -49,9 +49,9 @@ export class TurretOperator {
 
   private async handleGrab() {
     await this.drednotBot.moveMouse(100, 150);
-    await this.drednotBot.pressMouseButton();
+    await this.drednotBot.pressMouseButton("left");
     await sleep(1000);
-    await this.drednotBot.releaseMouseButton();
+    await this.drednotBot.releaseMouseButton("left");
     this.logger("grabbed");
   }
 
@@ -81,7 +81,7 @@ export class TurretOperator {
 
   private async onMouseButtonDown() {
     try {
-      await this.drednotBot.pressMouseButton();
+      await this.drednotBot.pressMouseButton("left");
     } catch (error) {
       this.errorReceiver(error);
     }
@@ -89,7 +89,7 @@ export class TurretOperator {
 
   private async onMouseButtonUp() {
     try {
-      await this.drednotBot.releaseMouseButton();
+      await this.drednotBot.releaseMouseButton("left");
     } catch (error) {
       this.errorReceiver(error);
     }
