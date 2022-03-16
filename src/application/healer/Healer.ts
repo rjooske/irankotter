@@ -6,8 +6,8 @@ import { sleep } from "../../utility/promise";
 import { HealerClickDirection } from "./HealerClickDirection";
 import { HealerState } from "./HealerState";
 
-const SCREEN_WIDTH = 200;
-const SCREEN_HEIGHT = 60;
+const SCREEN_WIDTH = 60;
+const SCREEN_HEIGHT = 200;
 const SHIELD_USE_DURATION = 2000;
 
 export class Healer {
