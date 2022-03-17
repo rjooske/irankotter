@@ -2,6 +2,7 @@ import { ConsoleMessage, Page } from "puppeteer";
 import * as domain from "../../domain/drednot/DrednotBot";
 import { DrednotBotEventListener } from "../../domain/drednot/DrednotBotEventListener";
 import { DrednotChat } from "../../domain/drednot/DrednotChat";
+import { MouseButton } from "../../domain/mouse/MouseButton";
 import { createRandomString } from "../../utility/string";
 
 export class DrednotBot implements domain.DrednotBot {
@@ -96,12 +97,12 @@ export class DrednotBot implements domain.DrednotBot {
     await this.page.mouse.move(x, y);
   }
 
-  async pressMouseButton() {
-    await this.page.mouse.down({ button: "left" });
+  async pressMouseButton(button: MouseButton) {
+    await this.page.mouse.down({ button });
   }
 
-  async releaseMouseButton() {
-    await this.page.mouse.up({ button: "left" });
+  async releaseMouseButton(button: MouseButton) {
+    await this.page.mouse.up({ button });
   }
 
   setEventListener(listener: DrednotBotEventListener) {
