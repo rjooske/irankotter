@@ -6,12 +6,16 @@ import { sleep } from "../../utility/promise";
 import { HealerClickDirection } from "./HealerClickDirection";
 import { HealerState } from "./HealerState";
 
-const SCREEN_WIDTH = 60;
+const SCREEN_WIDTH = 70;
 const SCREEN_HEIGHT = 200;
 const SHIELD_USE_DURATION = 2000;
 
 export class Healer {
   private state: HealerState = "idle";
+  private readonly jumpInterval = setInterval(
+    this.handleJumpInterval.bind(this),
+    10 * 1000
+  );
 
   constructor(
     private readonly clickDirection: HealerClickDirection,
@@ -89,12 +93,21 @@ export class Healer {
     this.logger("used up the item");
   }
 
-  private handleDrednotDead() {}
+  private handleDrednotDead() {
+    clearInterval(this.jumpInterval);
+    this.errorReceiver(new Error("Drednot died"));
+  }
+
+  private async handleJumpInterval() {
+    if (this.state === "idle") {
+      await this.drednotBot.jump();
+    }
+  }
 }
 
 function getClickPosition(direction: HealerClickDirection): [number, number] {
-  const centerX = SCREEN_WIDTH / 2 + 0.5;
-  const centerY = SCREEN_HEIGHT / 2 + 0.5;
+  const centerX = SCREEN_WIDTH / 2;
+  const centerY = SCREEN_HEIGHT / 2;
 
   switch (direction) {
     case "above":
