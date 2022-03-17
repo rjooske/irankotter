@@ -8,8 +8,7 @@
 // import { BotManager } from "./main/bot/BotManager";
 // import { Server } from "./server/Server";
 
-import { TurretOperatorController } from "./controller/turret/TurretOperatorController";
-import { MouseService } from "./infrastructure/mouse/MouseService";
+import { HealerController } from "./controller/healer/HealerController";
 
 // interface Options {
 //   development: boolean;
@@ -172,12 +171,17 @@ import { MouseService } from "./infrastructure/mouse/MouseService";
 // main();
 
 (async () => {
-  const mouseService = new MouseService();
-  const turretOperatorController = new TurretOperatorController(
-    mouseService,
-    (log) => console.log(log)
-  );
-  await turretOperatorController.create(
-    "https://test.drednot.io/invite/IP9ejRouBRKmDrMXcjYiq9HO"
+  // const mouseService = new MouseService();
+  // const turretOperatorController = new TurretOperatorController(
+  //   mouseService,
+  //   (log) => console.log(log)
+  // );
+  // await turretOperatorController.create(
+  //   "https://test.drednot.io/invite/IP9ejRouBRKmDrMXcjYiq9HO"
+  // );
+  const healerController = new HealerController((log) => console.log(log));
+  healerController.create(
+    "https://test.drednot.io/invite/esDt-6P1Ohf4H5SUiytuJd2o",
+    "right"
   );
 })();
