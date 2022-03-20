@@ -2,13 +2,14 @@ import { ConsoleMessage, Page } from "puppeteer";
 import * as domain from "../../domain/drednot/DrednotBot";
 import { DrednotBotEventListener } from "../../domain/drednot/DrednotBotEventListener";
 import { DrednotChat } from "../../domain/drednot/DrednotChat";
+import { Logger } from "../../domain/log/Logger";
 import { MouseButton } from "../../domain/mouse/MouseButton";
 import { createRandomString } from "../../utility/string";
 
 export class DrednotBot implements domain.DrednotBot {
   private listener?: DrednotBotEventListener;
 
-  constructor(private readonly page: Page) {
+  constructor(private readonly page: Page, private readonly logger: Logger) {
     this.page.on("console", this.handleConsoleMessage.bind(this));
   }
 
@@ -22,6 +23,7 @@ export class DrednotBot implements domain.DrednotBot {
     await setPageWidth(this.page, 800);
     await setPageHeight(this.page, 600);
     await this.page.goto(url);
+    this.logger(`opened ${url}`);
 
     // Accept the terms
     await waitForAndClickSelector(
@@ -34,7 +36,9 @@ export class DrednotBot implements domain.DrednotBot {
       "body > div.modal-container > div > div > button"
     );
 
-    await getShipName(this.page);
+    this.logger("joining");
+    const shipName = await getShipName(this.page);
+    this.logger(`joined "${shipName}"`);
 
     await hideSelectorAll(this.page, "body > *:not(#game-container)");
 
@@ -42,6 +46,7 @@ export class DrednotBot implements domain.DrednotBot {
     const prefix = createRandomString(128);
     await this.observeChat(prefix);
     this.observeConsole(prefix);
+    this.logger("listening to the chat");
   }
 
   private async observeChat(prefix: string) {
