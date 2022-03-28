@@ -22,7 +22,7 @@ export class TurretOperatorController {
 
     const browser = await puppeteer.launch({ headless: false });
     const page = await browser.newPage();
-    const bot = new DrednotBot(page);
+    const bot = new DrednotBot(page, this.logger);
     await bot.join(url);
 
     const operator = new TurretOperator(
