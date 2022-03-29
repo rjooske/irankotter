@@ -1,15 +1,24 @@
 import { ConsoleMessage, Page } from "puppeteer";
-import * as domain from "../../domain/drednot/DrednotBot";
+import { DrednotBot as DomainDrednotBot } from "../../domain/drednot/DrednotBot";
 import { DrednotBotEventListener } from "../../domain/drednot/DrednotBotEventListener";
 import { DrednotChat } from "../../domain/drednot/DrednotChat";
+import { DrednotOnChat } from "../../domain/drednot/DrednotOnChat";
+import { DrednotOnClose } from "../../domain/drednot/DrednotOnClose";
+import { KeyCode } from "../../domain/keyboard/KeyCode";
 import { Logger } from "../../domain/log/Logger";
 import { MouseButton } from "../../domain/mouse/MouseButton";
 import { createRandomString } from "../../utility/string";
 
-export class DrednotBot implements domain.DrednotBot {
+export class DrednotBot extends DomainDrednotBot {
   private listener?: DrednotBotEventListener;
 
-  constructor(private readonly page: Page, private readonly logger: Logger) {
+  constructor(
+    private readonly page: Page,
+    onChat: DrednotOnChat,
+    onClose: DrednotOnClose,
+    private readonly logger: Logger
+  ) {
+    super(onChat, onClose);
     this.page.on("console", this.handleConsoleMessage.bind(this));
   }
 
@@ -89,50 +98,47 @@ export class DrednotBot implements domain.DrednotBot {
     }
   }
 
-  async setScreenSize(width: number, height: number) {
-    await setPageWidth(this.page, width);
-    await setPageHeight(this.page, height);
+  // Implement domain methods
+
+  async setScreenWidth(width: number) {
+    const viewport = this.page.viewport();
+    if (!viewport || viewport.width === width) {
+      return;
+    }
+
+    await this.page.setViewport({ width, height: viewport.height });
+    await this.page.waitForFunction(`window.innerWidth === ${width}`);
   }
 
-  async jump() {
-    await this.page.keyboard.press("Space", { delay: 1000 });
+  async setScreenHeight(height: number) {
+    const viewport = this.page.viewport();
+    if (!viewport || viewport.height === height) {
+      return;
+    }
+
+    await this.page.setViewport({ width: viewport.width, height });
+    await this.page.waitForFunction(`window.innerHeight === ${height}`);
   }
 
-  async moveMouse(x: number, y: number) {
+  async keyPress(key: KeyCode) {
+    await this.page.keyboard.down(key);
+  }
+
+  async keyRelease(key: KeyCode) {
+    await this.page.keyboard.up(key);
+  }
+
+  async mouseMove(x: number, y: number) {
     await this.page.mouse.move(x, y);
   }
 
-  async pressMouseButton(button: MouseButton) {
+  async mousePress(button: MouseButton) {
     await this.page.mouse.down({ button });
   }
 
-  async releaseMouseButton(button: MouseButton) {
+  async mouseRelease(button: MouseButton) {
     await this.page.mouse.up({ button });
   }
-
-  setEventListener(listener: DrednotBotEventListener) {
-    this.listener = listener;
-  }
-}
-
-async function setPageWidth(page: Page, width: number) {
-  const viewport = page.viewport();
-  if (!viewport || viewport.width === width) {
-    return;
-  }
-
-  await page.setViewport({ width, height: viewport.height });
-  await page.waitForFunction(`window.innerWidth === ${width}`);
-}
-
-async function setPageHeight(page: Page, height: number) {
-  const viewport = page.viewport();
-  if (!viewport || viewport.height === height) {
-    return;
-  }
-
-  await page.setViewport({ width: viewport.width, height });
-  await page.waitForFunction(`window.innerHeight === ${height}`);
 }
 
 async function waitForAndClickSelector(page: Page, selector: string) {
