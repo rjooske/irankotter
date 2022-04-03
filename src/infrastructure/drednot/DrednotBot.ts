@@ -11,9 +11,9 @@ import { createRandomString } from "../../utility/string";
 
 export class DrednotBot extends DomainDrednotBot {
   constructor(
-    private readonly page: Page,
     onChat: DrednotOnChat,
     onClose: DrednotOnClose,
+    private readonly page: Page,
     private readonly logger: Logger
   ) {
     super(onChat, onClose);

@@ -1,6 +1,7 @@
-import { Logger } from "../log/Logger";
 import { DrednotBot } from "./DrednotBot";
+import { DrednotOnChat } from "./DrednotOnChat";
+import { DrednotOnClose } from "./DrednotOnClose";
 
 export interface DrednotBotFactory {
-  create(url: string, logger: Logger): Promise<DrednotBot>;
+  create(onChat: DrednotOnChat, onClose: DrednotOnClose): Promise<DrednotBot>;
 }
