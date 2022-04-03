@@ -4,7 +4,7 @@ import { DrednotOnChat } from "./DrednotOnChat";
 import { DrednotOnClose } from "./DrednotOnClose";
 
 export abstract class DrednotBot {
-  protected constructor(
+  constructor(
     protected readonly onChat: DrednotOnChat,
     protected readonly onClose: DrednotOnClose
   ) {}

@@ -1,6 +1,6 @@
 import { ConsoleMessage, Page } from "puppeteer";
+import { inspect } from "util";
 import { DrednotBot as DomainDrednotBot } from "../../domain/drednot/DrednotBot";
-import { DrednotBotEventListener } from "../../domain/drednot/DrednotBotEventListener";
 import { DrednotChat } from "../../domain/drednot/DrednotChat";
 import { DrednotOnChat } from "../../domain/drednot/DrednotOnChat";
 import { DrednotOnClose } from "../../domain/drednot/DrednotOnClose";
@@ -10,8 +10,6 @@ import { MouseButton } from "../../domain/mouse/MouseButton";
 import { createRandomString } from "../../utility/string";
 
 export class DrednotBot extends DomainDrednotBot {
-  private listener?: DrednotBotEventListener;
-
   constructor(
     private readonly page: Page,
     onChat: DrednotOnChat,
@@ -22,40 +20,44 @@ export class DrednotBot extends DomainDrednotBot {
     this.page.on("console", this.handleConsoleMessage.bind(this));
   }
 
-  private handleConsoleMessage(message: ConsoleMessage) {
+  private async handleConsoleMessage(message: ConsoleMessage) {
     if (message.text() === "[[drednot dead]]") {
-      this.listener?.onDrednotDead();
+      await this.close(new Error("Drednot died"));
     }
   }
 
   async join(url: string) {
-    await setPageWidth(this.page, 800);
-    await setPageHeight(this.page, 600);
-    await this.page.goto(url);
-    this.logger(`opened ${url}`);
+    try {
+      await this.setScreenWidth(800);
+      await this.setScreenHeight(600);
+      await this.page.goto(url);
+      this.logger(`opened ${url}`);
 
-    // Accept the terms
-    await waitForAndClickSelector(
-      this.page,
-      "body > div.modal-container > div > div > div > button"
-    );
-    // Start without logging in
-    await waitForAndClickSelector(
-      this.page,
-      "body > div.modal-container > div > div > button"
-    );
+      // Accept the terms
+      await waitForAndClickSelector(
+        this.page,
+        "body > div.modal-container > div > div > div > button"
+      );
+      // Start without logging in
+      await waitForAndClickSelector(
+        this.page,
+        "body > div.modal-container > div > div > button"
+      );
 
-    this.logger("joining");
-    const shipName = await getShipName(this.page);
-    this.logger(`joined "${shipName}"`);
+      this.logger("joining");
+      const shipName = await getShipName(this.page);
+      this.logger(`joined "${shipName}"`);
 
-    await hideSelectorAll(this.page, "body > *:not(#game-container)");
+      await hideSelectorAll(this.page, "body > *:not(#game-container)");
 
-    // Listen to the chat
-    const prefix = createRandomString(128);
-    await this.observeChat(prefix);
-    this.observeConsole(prefix);
-    this.logger("listening to the chat");
+      // Listen to the chat
+      const prefix = createRandomString(128);
+      await this.observeChat(prefix);
+      this.observeConsole(prefix);
+      this.logger("listening to the chat");
+    } catch (error) {
+      await this.close(error);
+    }
   }
 
   private async observeChat(prefix: string) {
@@ -83,18 +85,18 @@ export class DrednotBot extends DomainDrednotBot {
       }
 
       const chat: DrednotChat = JSON.parse(text.substring(prefix.length));
-      this.listener?.onDrednotChat(chat);
+      this.onChat(chat);
     });
   }
 
-  async close() {
-    if (!this.page.isClosed()) {
-      await this.page.close();
-    }
+  async close(error: unknown) {
+    this.logger(`closing because of: ${JSON.stringify(inspect(error))}`);
+    this.onClose();
 
-    const browser = this.page.browser();
-    if (browser.isConnected()) {
-      await browser.close();
+    try {
+      await this.page.browser().close();
+    } catch (error) {
+      this.logger("failed to close the browser");
     }
   }
 
@@ -106,8 +108,12 @@ export class DrednotBot extends DomainDrednotBot {
       return;
     }
 
-    await this.page.setViewport({ width, height: viewport.height });
-    await this.page.waitForFunction(`window.innerWidth === ${width}`);
+    try {
+      await this.page.setViewport({ width, height: viewport.height });
+      await this.page.waitForFunction(`window.innerWidth === ${width}`);
+    } catch (error) {
+      await this.close(error);
+    }
   }
 
   async setScreenHeight(height: number) {
@@ -116,28 +122,52 @@ export class DrednotBot extends DomainDrednotBot {
       return;
     }
 
-    await this.page.setViewport({ width: viewport.width, height });
-    await this.page.waitForFunction(`window.innerHeight === ${height}`);
+    try {
+      await this.page.setViewport({ width: viewport.width, height });
+      await this.page.waitForFunction(`window.innerHeight === ${height}`);
+    } catch (error) {
+      await this.close(error);
+    }
   }
 
   async keyPress(key: KeyCode) {
-    await this.page.keyboard.down(key);
+    try {
+      await this.page.keyboard.down(key);
+    } catch (error) {
+      await this.close(error);
+    }
   }
 
   async keyRelease(key: KeyCode) {
-    await this.page.keyboard.up(key);
+    try {
+      await this.page.keyboard.up(key);
+    } catch (error) {
+      await this.close(error);
+    }
   }
 
   async mouseMove(x: number, y: number) {
-    await this.page.mouse.move(x, y);
+    try {
+      await this.page.mouse.move(x, y);
+    } catch (error) {
+      await this.close(error);
+    }
   }
 
   async mousePress(button: MouseButton) {
-    await this.page.mouse.down({ button });
+    try {
+      await this.page.mouse.down({ button });
+    } catch (error) {
+      await this.close(error);
+    }
   }
 
   async mouseRelease(button: MouseButton) {
-    await this.page.mouse.up({ button });
+    try {
+      await this.page.mouse.up({ button });
+    } catch (error) {
+      await this.close(error);
+    }
   }
 }
 
