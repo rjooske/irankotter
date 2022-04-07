@@ -9,14 +9,11 @@ import { Logger } from "../../domain/log/Logger";
 import { MouseButton } from "../../domain/mouse/MouseButton";
 import { createRandomString } from "../../utility/string";
 
-export class DrednotBot extends DomainDrednotBot {
-  constructor(
-    onChat: DrednotOnChat,
-    onClose: DrednotOnClose,
-    private readonly page: Page,
-    private readonly logger: Logger
-  ) {
-    super(onChat, onClose);
+export class DrednotBot implements DomainDrednotBot {
+  private onChat?: DrednotOnChat;
+  private onClose?: DrednotOnClose;
+
+  constructor(private readonly page: Page, private readonly logger: Logger) {
     this.page.on("console", this.handleConsoleMessage.bind(this));
   }
 
@@ -85,13 +82,13 @@ export class DrednotBot extends DomainDrednotBot {
       }
 
       const chat: DrednotChat = JSON.parse(text.substring(prefix.length));
-      this.onChat(chat);
+      this.onChat?.(chat);
     });
   }
 
   async close(error: unknown) {
     this.logger(`closing because of: ${JSON.stringify(inspect(error))}`);
-    this.onClose();
+    this.onClose?.();
 
     try {
       await this.page.browser().close();
@@ -101,6 +98,14 @@ export class DrednotBot extends DomainDrednotBot {
   }
 
   // Implement domain methods
+
+  setOnChat(onChat: DrednotOnChat) {
+    this.onChat = onChat;
+  }
+
+  setOnClose(onClose: DrednotOnClose) {
+    this.onClose = onClose;
+  }
 
   async setScreenWidth(width: number) {
     const viewport = this.page.viewport();

@@ -3,19 +3,17 @@ import { MouseButton } from "../mouse/MouseButton";
 import { DrednotOnChat } from "./DrednotOnChat";
 import { DrednotOnClose } from "./DrednotOnClose";
 
-export abstract class DrednotBot {
-  constructor(
-    protected readonly onChat: DrednotOnChat,
-    protected readonly onClose: DrednotOnClose
-  ) {}
+export interface DrednotBot {
+  setOnChat(onChat: DrednotOnChat): void;
+  setOnClose(onClose: DrednotOnClose): void;
 
-  abstract setScreenWidth(width: number): Promise<void>;
-  abstract setScreenHeight(height: number): Promise<void>;
+  setScreenWidth(width: number): Promise<void>;
+  setScreenHeight(height: number): Promise<void>;
 
-  abstract keyPress(key: KeyCode): Promise<void>;
-  abstract keyRelease(key: KeyCode): Promise<void>;
+  keyPress(key: KeyCode): Promise<void>;
+  keyRelease(key: KeyCode): Promise<void>;
 
-  abstract mouseMove(x: number, y: number): Promise<void>;
-  abstract mousePress(button: MouseButton): Promise<void>;
-  abstract mouseRelease(button: MouseButton): Promise<void>;
+  mouseMove(x: number, y: number): Promise<void>;
+  mousePress(button: MouseButton): Promise<void>;
+  mouseRelease(button: MouseButton): Promise<void>;
 }
