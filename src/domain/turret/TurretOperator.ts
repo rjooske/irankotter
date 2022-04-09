@@ -5,6 +5,7 @@ import { MouseEventListener } from "../../domain/mouse/MouseEventListener";
 import { MouseMoveEvent } from "../../domain/mouse/MouseMoveEvent";
 import { MouseService } from "../../domain/mouse/MouseService";
 import { sleep } from "../../utility/promise";
+import { TurretOperatorOnClose } from "./TurretOperatorOnClose";
 
 export class TurretOperator {
   private readonly mouseEventListener: MouseEventListener = {
@@ -16,6 +17,7 @@ export class TurretOperator {
   constructor(
     private readonly drednotBot: DrednotBot,
     private readonly mouseService: MouseService,
+    private readonly onClose: TurretOperatorOnClose,
     private readonly logger: Logger
   ) {
     this.drednotBot.setScreenWidth(200);
@@ -44,6 +46,7 @@ export class TurretOperator {
 
   private handleClose() {
     this.mouseService.removeEventListener(this.mouseEventListener);
+    this.onClose();
   }
 
   private async handleGrab() {
