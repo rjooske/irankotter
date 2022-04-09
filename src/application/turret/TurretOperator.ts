@@ -1,6 +1,5 @@
 import { DrednotBot } from "../../domain/drednot/DrednotBot";
 import { DrednotChat } from "../../domain/drednot/DrednotChat";
-import { ErrorReceiver } from "../../domain/error/ErrorReceiver";
 import { Logger } from "../../domain/log/Logger";
 import { MouseEventListener } from "../../domain/mouse/MouseEventListener";
 import { MouseMoveEvent } from "../../domain/mouse/MouseMoveEvent";
@@ -17,52 +16,49 @@ export class TurretOperator {
   constructor(
     private readonly drednotBot: DrednotBot,
     private readonly mouseService: MouseService,
-    private readonly errorReceiver: ErrorReceiver,
     private readonly logger: Logger
   ) {
-    drednotBot.setScreenSize(200, 200).catch(errorReceiver);
-    drednotBot.setEventListener({
-      onDrednotChat: this.onDrednotChat.bind(this),
-      onDrednotDead: this.onDrednotDead.bind(this),
-    });
-    mouseService.addEventListener(this.mouseEventListener);
+    this.drednotBot.setScreenWidth(200);
+    this.drednotBot.setScreenHeight(200);
+    this.drednotBot.setOnChat(this.handleChat.bind(this));
+    this.drednotBot.setOnClose(this.handleClose.bind(this));
+    this.mouseService.addEventListener(this.mouseEventListener);
   }
 
-  private async onDrednotChat(chat: DrednotChat) {
+  private async handleChat(chat: DrednotChat) {
     if (chat.role !== "Captain") {
       return;
     }
 
-    try {
-      switch (chat.text.trim().toLowerCase()) {
-        case "grab":
-          await this.handleGrab();
-          break;
-        case "release":
-          await this.handleRelease();
-          break;
-      }
-    } catch (error) {
-      this.errorReceiver(error);
+    this.logger(`received "${chat.text}" from ${chat.name}`);
+
+    switch (chat.text.trim().toLowerCase()) {
+      case "grab":
+        await this.handleGrab();
+        break;
+      case "release":
+        await this.handleRelease();
+        break;
     }
   }
 
+  private handleClose() {
+    this.mouseService.removeEventListener(this.mouseEventListener);
+  }
+
   private async handleGrab() {
-    await this.drednotBot.moveMouse(100, 150);
-    await this.drednotBot.pressMouseButton("left");
+    await this.drednotBot.mouseMove(100, 150);
+    await this.drednotBot.mousePress("left");
     await sleep(1000);
-    await this.drednotBot.releaseMouseButton("left");
+    await this.drednotBot.mouseRelease("left");
     this.logger("grabbed");
   }
 
   private async handleRelease() {
-    await this.drednotBot.jump(); // TODO: Maybe repurposing jump() is not a good idea
+    await this.drednotBot.keyPress("Space");
+    await sleep(1000);
+    await this.drednotBot.keyRelease("Space");
     this.logger("released");
-  }
-
-  private onDrednotDead() {
-    this.mouseService.removeEventListener(this.mouseEventListener);
-    this.errorReceiver(new Error("Drednot died"));
   }
 
   private async onMouseMove(event: MouseMoveEvent) {
@@ -71,27 +67,14 @@ export class TurretOperator {
     const r = Math.sqrt(x ** 2 + y ** 2) || 1;
     x = 50 * (x / r) + 100;
     y = 50 * (y / r) + 100;
-
-    try {
-      await this.drednotBot.moveMouse(x, y);
-    } catch (error) {
-      this.errorReceiver(error);
-    }
+    await this.drednotBot.mouseMove(x, y);
   }
 
   private async onMouseButtonDown() {
-    try {
-      await this.drednotBot.pressMouseButton("left");
-    } catch (error) {
-      this.errorReceiver(error);
-    }
+    await this.drednotBot.mousePress("left");
   }
 
   private async onMouseButtonUp() {
-    try {
-      await this.drednotBot.releaseMouseButton("left");
-    } catch (error) {
-      this.errorReceiver(error);
-    }
+    await this.drednotBot.mouseRelease("left");
   }
 }

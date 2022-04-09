@@ -21,13 +21,8 @@ export class TurretOperatorGroup {
       this.logger(`turret operator #${this.counter++}: ${log}`);
     };
 
-    const drednotBot = await this.drednotBotFactory.create(url, logger);
-    const operator = new TurretOperator(
-      drednotBot,
-      this.mouseService,
-      onClose,
-      logger
-    );
+    const drednotBot = await this.drednotBotFactory.create(url);
+    const operator = new TurretOperator(drednotBot, this.mouseService, logger);
     this.operators.push(operator);
   }
 
