@@ -21,8 +21,8 @@ export class TurretOperator {
       await this.drednotBot.setScreenHeight(200);
     })();
 
-    this.drednotBot.setOnChat(this.handleChat.bind(this));
-    this.drednotBot.setOnClose(this.handleClose.bind(this));
+    this.drednotBot.setOnChat(this.handleChat);
+    this.drednotBot.setOnClose(this.handleClose);
 
     this.mouseEventListener = {
       onMouseMove: this.handleMouseMove,
@@ -32,7 +32,7 @@ export class TurretOperator {
     this.mouseService.addEventListener(this.mouseEventListener);
   }
 
-  private async handleChat(chat: DrednotChat) {
+  private readonly handleChat = async (chat: DrednotChat) => {
     if (chat.role !== "Captain") {
       return;
     }
@@ -47,12 +47,12 @@ export class TurretOperator {
         await this.handleRelease();
         break;
     }
-  }
+  };
 
-  private handleClose() {
+  private readonly handleClose = () => {
     this.mouseService.removeEventListener(this.mouseEventListener);
     this.onClose();
-  }
+  };
 
   private readonly handleGrab = async () => {
     await this.drednotBot.mouseMove(100, 150);
