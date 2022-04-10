@@ -1,9 +1,9 @@
 import { DrednotBot } from "../../domain/drednot/DrednotBot";
 import { DrednotChat } from "../../domain/drednot/DrednotChat";
-import { ErrorReceiver } from "../../domain/error/ErrorReceiver";
 import { Logger } from "../../domain/log/Logger";
 import { sleep } from "../../utility/promise";
 import { HealerClickDirection } from "./HealerClickDirection";
+import { HealerOnClose } from "./HealerOnClose";
 import { HealerState } from "./HealerState";
 
 const SCREEN_WIDTH = 70;
@@ -12,97 +12,96 @@ const SHIELD_USE_DURATION = 2000;
 
 export class Healer {
   private state: HealerState = "idle";
-  private readonly jumpInterval = setInterval(
-    this.handleJumpInterval.bind(this),
-    10 * 1000
-  );
+  private readonly jumpInterval;
 
   constructor(
     private readonly clickDirection: HealerClickDirection,
     private readonly drednotBot: DrednotBot,
-    private readonly errorReceiver: ErrorReceiver,
+    private readonly onClose: HealerOnClose,
     private readonly logger: Logger
   ) {
-    drednotBot.setScreenSize(SCREEN_WIDTH, SCREEN_HEIGHT).catch(errorReceiver);
-    drednotBot.setEventListener({
-      onDrednotChat: this.handleDrednotChat.bind(this),
-      onDrednotDead: this.handleDrednotDead.bind(this),
-    });
+    this.jumpInterval = setInterval(this.handleJumpInterval, 10 * 1000);
+    this.drednotBot.setScreenWidth(SCREEN_WIDTH);
+    this.drednotBot.setScreenHeight(SCREEN_HEIGHT);
+    this.drednotBot.setOnChat(this.handleChat);
+    this.drednotBot.setOnClose(this.handleClose);
   }
 
-  private async handleDrednotChat(chat: DrednotChat) {
+  private readonly handleChat = async (chat: DrednotChat) => {
     if (chat.role !== "Captain") {
       return;
     }
 
-    try {
-      switch (chat.text.trim().toLowerCase()) {
-        case "heal":
-          await this.handleHeal();
-          break;
-        case "no heal":
-          await this.handleNoHeal();
-          break;
-        case "use up":
-          await this.handleUseUp();
-          break;
-      }
-    } catch (error) {
-      this.errorReceiver(error);
-    }
-  }
+    this.logger(`received "${chat.text}" from ${chat.name}`);
 
-  private async handleHeal() {
+    switch (chat.text.trim().toLowerCase()) {
+      case "heal":
+        await this.handleHeal();
+        break;
+      case "no heal":
+        await this.handleNoHeal();
+        break;
+      case "use up":
+        await this.handleUseUp();
+        break;
+    }
+  };
+
+  private readonly handleHeal = async () => {
     if (this.state !== "idle") {
       return;
     }
 
     await sleep(SHIELD_USE_DURATION * Math.random());
-    await this.drednotBot.moveMouse(...getClickPosition(this.clickDirection));
-    await this.drednotBot.pressMouseButton("left");
+    await this.drednotBot.mouseMove(...getClickPosition(this.clickDirection));
+    await this.drednotBot.mousePress("left");
 
     this.state = "healing";
     this.logger(`started healing, click "${this.clickDirection}"`);
-  }
+  };
 
-  private async handleNoHeal() {
+  private readonly handleNoHeal = async () => {
     if (this.state !== "healing") {
       return;
     }
 
-    await this.drednotBot.releaseMouseButton("left");
-    await this.drednotBot.moveMouse(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2);
-    await this.drednotBot.pressMouseButton("right");
+    await this.drednotBot.mouseRelease("left");
+    await this.drednotBot.mouseMove(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2);
+    await this.drednotBot.mousePress("right");
     await sleep(1000);
-    await this.drednotBot.releaseMouseButton("right");
+    await this.drednotBot.mouseRelease("right");
 
     this.state = "idle";
     this.logger("stopped healing");
-  }
+  };
 
-  private async handleUseUp() {
+  private readonly handleUseUp = async () => {
     if (this.state !== "idle") {
       return;
     }
 
-    await this.drednotBot.moveMouse(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2);
-    await this.drednotBot.pressMouseButton("left");
+    await this.drednotBot.mouseMove(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2);
+    await this.drednotBot.mousePress("left");
     await sleep(SHIELD_USE_DURATION);
-    await this.drednotBot.releaseMouseButton("left");
+    await this.drednotBot.mouseRelease("left");
 
     this.logger("used up the item");
-  }
+  };
 
-  private handleDrednotDead() {
+  private readonly handleClose = () => {
     clearInterval(this.jumpInterval);
-    this.errorReceiver(new Error("Drednot died"));
-  }
+    this.onClose();
+  };
 
-  private async handleJumpInterval() {
-    if (this.state === "idle") {
-      await this.drednotBot.jump();
+  private readonly handleJumpInterval = async () => {
+    if (this.state !== "idle") {
+      return;
     }
-  }
+
+    await this.drednotBot.keyPress("Space");
+    await sleep(1000);
+    await this.drednotBot.keyRelease("Space");
+  };
 }
 
 function getClickPosition(direction: HealerClickDirection): [number, number] {
