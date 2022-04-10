@@ -14,16 +14,16 @@ export class DrednotBot implements DomainDrednotBot {
   private onClose?: DrednotOnClose;
 
   constructor(private readonly page: Page, private readonly logger: Logger) {
-    this.page.on("console", this.handleConsoleMessage.bind(this));
+    this.page.on("console", this.handleConsoleMessage);
   }
 
-  private async handleConsoleMessage(message: ConsoleMessage) {
+  private readonly handleConsoleMessage = async (message: ConsoleMessage) => {
     if (message.text() === "[[drednot dead]]") {
       await this.close(new Error("Drednot died"));
     }
-  }
+  };
 
-  async join(url: string) {
+  readonly join = async (url: string) => {
     try {
       await this.setScreenWidth(800);
       await this.setScreenHeight(600);
@@ -55,9 +55,9 @@ export class DrednotBot implements DomainDrednotBot {
     } catch (error) {
       await this.close(error);
     }
-  }
+  };
 
-  private async observeChat(prefix: string) {
+  private readonly observeChat = async (prefix: string) => {
     await this.page.evaluate(`
       new MutationObserver((mutations) => {
         for (const mutation of mutations) {
@@ -72,9 +72,9 @@ export class DrednotBot implements DomainDrednotBot {
         }
       }).observe(document.querySelector("#chat-content"), { childList: true });
     `);
-  }
+  };
 
-  private observeConsole(prefix: string) {
+  private readonly observeConsole = (prefix: string) => {
     this.page.on("console", (event) => {
       const text = event.text();
       if (!text.startsWith(prefix)) {
@@ -84,9 +84,9 @@ export class DrednotBot implements DomainDrednotBot {
       const chat: DrednotChat = JSON.parse(text.substring(prefix.length));
       this.onChat?.(chat);
     });
-  }
+  };
 
-  async close(error: unknown) {
+  private readonly close = async (error: unknown) => {
     this.logger(`closing because of: ${JSON.stringify(inspect(error))}`);
     this.onClose?.();
 
@@ -95,19 +95,19 @@ export class DrednotBot implements DomainDrednotBot {
     } catch (error) {
       this.logger("failed to close the browser");
     }
-  }
+  };
 
   // Implement domain methods
 
-  setOnChat(onChat: DrednotOnChat) {
+  readonly setOnChat = (onChat: DrednotOnChat) => {
     this.onChat = onChat;
-  }
+  };
 
-  setOnClose(onClose: DrednotOnClose) {
+  readonly setOnClose = (onClose: DrednotOnClose) => {
     this.onClose = onClose;
-  }
+  };
 
-  async setScreenWidth(width: number) {
+  readonly setScreenWidth = async (width: number) => {
     const viewport = this.page.viewport();
     if (!viewport || viewport.width === width) {
       return;
@@ -119,9 +119,9 @@ export class DrednotBot implements DomainDrednotBot {
     } catch (error) {
       await this.close(error);
     }
-  }
+  };
 
-  async setScreenHeight(height: number) {
+  readonly setScreenHeight = async (height: number) => {
     const viewport = this.page.viewport();
     if (!viewport || viewport.height === height) {
       return;
@@ -133,47 +133,47 @@ export class DrednotBot implements DomainDrednotBot {
     } catch (error) {
       await this.close(error);
     }
-  }
+  };
 
-  async keyPress(key: KeyCode) {
+  readonly keyPress = async (key: KeyCode) => {
     try {
       await this.page.keyboard.down(key);
     } catch (error) {
       await this.close(error);
     }
-  }
+  };
 
-  async keyRelease(key: KeyCode) {
+  readonly keyRelease = async (key: KeyCode) => {
     try {
       await this.page.keyboard.up(key);
     } catch (error) {
       await this.close(error);
     }
-  }
+  };
 
-  async mouseMove(x: number, y: number) {
+  readonly mouseMove = async (x: number, y: number) => {
     try {
       await this.page.mouse.move(x, y);
     } catch (error) {
       await this.close(error);
     }
-  }
+  };
 
-  async mousePress(button: MouseButton) {
+  readonly mousePress = async (button: MouseButton) => {
     try {
       await this.page.mouse.down({ button });
     } catch (error) {
       await this.close(error);
     }
-  }
+  };
 
-  async mouseRelease(button: MouseButton) {
+  readonly mouseRelease = async (button: MouseButton) => {
     try {
       await this.page.mouse.up({ button });
     } catch (error) {
       await this.close(error);
     }
-  }
+  };
 }
 
 async function waitForAndClickSelector(page: Page, selector: string) {
