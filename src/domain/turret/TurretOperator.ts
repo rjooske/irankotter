@@ -20,8 +20,11 @@ export class TurretOperator {
     private readonly onClose: TurretOperatorOnClose,
     private readonly logger: Logger
   ) {
-    this.drednotBot.setScreenWidth(200);
-    this.drednotBot.setScreenHeight(200);
+    (async () => {
+      await this.drednotBot.setScreenWidth(200);
+      await this.drednotBot.setScreenHeight(200);
+    })();
+
     this.drednotBot.setOnChat(this.handleChat.bind(this));
     this.drednotBot.setOnClose(this.handleClose.bind(this));
     this.mouseService.addEventListener(this.mouseEventListener);

@@ -20,9 +20,12 @@ export class Healer {
     private readonly onClose: HealerOnClose,
     private readonly logger: Logger
   ) {
+    (async () => {
+      await this.drednotBot.setScreenWidth(SCREEN_WIDTH);
+      await this.drednotBot.setScreenHeight(SCREEN_HEIGHT);
+    })();
+
     this.jumpInterval = setInterval(this.handleJumpInterval, 10 * 1000);
-    this.drednotBot.setScreenWidth(SCREEN_WIDTH);
-    this.drednotBot.setScreenHeight(SCREEN_HEIGHT);
     this.drednotBot.setOnChat(this.handleChat);
     this.drednotBot.setOnClose(this.handleClose);
   }
