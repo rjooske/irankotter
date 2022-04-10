@@ -1,7 +1,7 @@
-import { DrednotBot } from "../../domain/drednot/DrednotBot";
-import { DrednotChat } from "../../domain/drednot/DrednotChat";
-import { Logger } from "../../domain/log/Logger";
 import { sleep } from "../../utility/promise";
+import { DrednotBot } from "../drednot/DrednotBot";
+import { DrednotChat } from "../drednot/DrednotChat";
+import { Logger } from "../log/Logger";
 import { HealerClickDirection } from "./HealerClickDirection";
 import { HealerOnClose } from "./HealerOnClose";
 import { HealerState } from "./HealerState";
