@@ -6,8 +6,10 @@ import { MouseMoveEvent } from "../../domain/mouse/MouseMoveEvent";
 import { MouseService } from "../../domain/mouse/MouseService";
 import { sleep } from "../../utility/promise";
 import { TurretOperatorOnClose } from "./TurretOperatorOnClose";
+import { TurretOperatorState } from "./TurretOperatorState";
 
 export class TurretOperator {
+  private state: TurretOperatorState = "idle";
   private readonly mouseEventListener: MouseEventListener;
 
   constructor(
@@ -55,21 +57,37 @@ export class TurretOperator {
   };
 
   private readonly handleGrab = async () => {
+    if (this.state !== "idle") {
+      return;
+    }
+
     await this.drednotBot.mouseMove(100, 150);
     await this.drednotBot.mousePress("left");
     await sleep(1000);
     await this.drednotBot.mouseRelease("left");
+
+    this.state = "operating";
     this.logger("grabbed");
   };
 
   private readonly handleRelease = async () => {
+    if (this.state !== "operating") {
+      return;
+    }
+
     await this.drednotBot.keyPress("Space");
     await sleep(1000);
     await this.drednotBot.keyRelease("Space");
+
+    this.state = "idle";
     this.logger("released");
   };
 
   private readonly handleMouseMove = async (event: MouseMoveEvent) => {
+    if (this.state !== "operating") {
+      return;
+    }
+
     let x = event.x / event.screenWidth - 0.5;
     let y = event.y / event.screenHeight - 0.5;
     const r = Math.sqrt(x ** 2 + y ** 2) || 1;
