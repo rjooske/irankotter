@@ -17,8 +17,10 @@ export class TurretOperatorGroup {
     const onClose = () => {
       this.removeOperator(operator);
     };
+
+    const counter = this.counter;
     const logger: Logger = (log) => {
-      this.logger(`turret operator #${this.counter}: ${log}`);
+      this.logger(`turret operator #${counter}: ${log}`);
     };
 
     const drednotBot = await this.drednotBotFactory.create(url, logger);
