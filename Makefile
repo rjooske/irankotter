@@ -7,7 +7,7 @@ build_server:
 
 .PHONY: dev
 dev: build
-	npm start -- -d -c above -u https://test.drednot.io/invite/IP9ejRouBRKmDrMXcjYiq9HO -p 1
+	npm start -- -d -c above -u https://test.drednot.io/invite/VtRqyN08DyngT4fvLr_FOPaL -p 1
 
 .PHONY: run
 run: build

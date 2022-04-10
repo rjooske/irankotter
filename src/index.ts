@@ -1,14 +1,8 @@
 // import commandLineArgs from "command-line-args";
-// import express, { Application } from "express";
-// import { readFileSync } from "fs";
-// import { createServer } from "https";
-// import { join } from "path";
-// import { argv, cwd, exit } from "process";
-// import { ConsoleLogger } from "./log/ConsoleLogger";
-// import { BotManager } from "./main/bot/BotManager";
-// import { Server } from "./server/Server";
 
-import { HealerController } from "./controller/healer/HealerController";
+import { TurretOperatorGroup } from "./domain/turret/TurretOperatorGroup";
+import { DrednotBotFactory } from "./infrastructure/drednot/DrednotBotFactory";
+import { MouseService } from "./infrastructure/mouse/MouseService";
 
 // interface Options {
 //   development: boolean;
@@ -171,17 +165,18 @@ import { HealerController } from "./controller/healer/HealerController";
 // main();
 
 (async () => {
-  // const mouseService = new MouseService();
-  // const turretOperatorController = new TurretOperatorController(
-  //   mouseService,
-  //   (log) => console.log(log)
-  // );
-  // await turretOperatorController.create(
-  //   "https://test.drednot.io/invite/IP9ejRouBRKmDrMXcjYiq9HO"
-  // );
-  const healerController = new HealerController((log) => console.log(log));
-  healerController.create(
-    "https://test.drednot.io/invite/esDt-6P1Ohf4H5SUiytuJd2o",
-    "right"
+  const mouseService = new MouseService();
+  const turretOperatorGroup = new TurretOperatorGroup(
+    new DrednotBotFactory(false),
+    mouseService,
+    (log) => console.log(log)
   );
+  await turretOperatorGroup.create(
+    "https://test.drednot.io/invite/VtRqyN08DyngT4fvLr_FOPaL"
+  );
+  // const healerController = new HealerController((log) => console.log(log));
+  // healerController.create(
+  //   "https://test.drednot.io/invite/VtRqyN08DyngT4fvLr_FOPaL",
+  //   "right"
+  // );
 })();
