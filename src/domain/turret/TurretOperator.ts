@@ -8,11 +8,7 @@ import { sleep } from "../../utility/promise";
 import { TurretOperatorOnClose } from "./TurretOperatorOnClose";
 
 export class TurretOperator {
-  private readonly mouseEventListener: MouseEventListener = {
-    onMouseMove: this.onMouseMove.bind(this),
-    onMouseButtonDown: this.onMouseButtonDown.bind(this),
-    onMouseButtonUp: this.onMouseButtonUp.bind(this),
-  };
+  private readonly mouseEventListener: MouseEventListener;
 
   constructor(
     private readonly drednotBot: DrednotBot,
@@ -27,6 +23,12 @@ export class TurretOperator {
 
     this.drednotBot.setOnChat(this.handleChat.bind(this));
     this.drednotBot.setOnClose(this.handleClose.bind(this));
+
+    this.mouseEventListener = {
+      onMouseMove: this.handleMouseMove,
+      onMouseButtonDown: this.handleMouseButtonDown,
+      onMouseButtonUp: this.handleMouseButtonUp,
+    };
     this.mouseService.addEventListener(this.mouseEventListener);
   }
 
@@ -52,35 +54,35 @@ export class TurretOperator {
     this.onClose();
   }
 
-  private async handleGrab() {
+  private readonly handleGrab = async () => {
     await this.drednotBot.mouseMove(100, 150);
     await this.drednotBot.mousePress("left");
     await sleep(1000);
     await this.drednotBot.mouseRelease("left");
     this.logger("grabbed");
-  }
+  };
 
-  private async handleRelease() {
+  private readonly handleRelease = async () => {
     await this.drednotBot.keyPress("Space");
     await sleep(1000);
     await this.drednotBot.keyRelease("Space");
     this.logger("released");
-  }
+  };
 
-  private async onMouseMove(event: MouseMoveEvent) {
+  private readonly handleMouseMove = async (event: MouseMoveEvent) => {
     let x = event.x / event.screenWidth - 0.5;
     let y = event.y / event.screenHeight - 0.5;
     const r = Math.sqrt(x ** 2 + y ** 2) || 1;
     x = 50 * (x / r) + 100;
     y = 50 * (y / r) + 100;
     await this.drednotBot.mouseMove(x, y);
-  }
+  };
 
-  private async onMouseButtonDown() {
+  private readonly handleMouseButtonDown = async () => {
     await this.drednotBot.mousePress("left");
-  }
+  };
 
-  private async onMouseButtonUp() {
+  private readonly handleMouseButtonUp = async () => {
     await this.drednotBot.mouseRelease("left");
-  }
+  };
 }
