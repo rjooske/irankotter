@@ -4,6 +4,8 @@ import { DrednotOnChat } from "./DrednotOnChat";
 import { DrednotOnClose } from "./DrednotOnClose";
 
 export interface DrednotBot {
+  getShipName(): string;
+
   setOnChat(onChat: DrednotOnChat): void;
   setOnClose(onClose: DrednotOnClose): void;
 

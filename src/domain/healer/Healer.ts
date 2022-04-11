@@ -30,6 +30,10 @@ export class Healer {
     this.drednotBot.setOnClose(this.handleClose);
   }
 
+  readonly getShipName = () => {
+    return this.drednotBot.getShipName();
+  };
+
   private readonly handleChat = async (chat: DrednotChat) => {
     if (chat.role !== "Captain") {
       return;

@@ -10,6 +10,7 @@ import { MouseButton } from "../../domain/mouse/MouseButton";
 import { createRandomString } from "../../utility/string";
 
 export class DrednotBot implements DomainDrednotBot {
+  private shipName?: string;
   private onChat?: DrednotOnChat;
   private onClose?: DrednotOnClose;
 
@@ -42,8 +43,8 @@ export class DrednotBot implements DomainDrednotBot {
       );
 
       this.logger("joining");
-      const shipName = await getShipName(this.page);
-      this.logger(`joined "${shipName}"`);
+      this.shipName = await getShipName(this.page);
+      this.logger(`joined "${this.shipName}"`);
 
       await hideSelectorAll(this.page, "body > *:not(#game-container)");
 
@@ -98,6 +99,10 @@ export class DrednotBot implements DomainDrednotBot {
   };
 
   // Implement domain methods
+
+  readonly getShipName = () => {
+    return this.shipName ?? "";
+  };
 
   readonly setOnChat = (onChat: DrednotOnChat) => {
     this.onChat = onChat;

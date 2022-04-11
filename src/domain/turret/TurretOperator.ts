@@ -34,6 +34,10 @@ export class TurretOperator {
     this.mouseService.addEventListener(this.mouseEventListener);
   }
 
+  readonly getShipName = () => {
+    return this.drednotBot.getShipName();
+  };
+
   private readonly handleChat = async (chat: DrednotChat) => {
     if (chat.role !== "Captain") {
       return;

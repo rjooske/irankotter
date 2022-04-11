@@ -5,7 +5,7 @@ import { HealerClickDirection } from "./HealerClickDirection";
 
 export class HealerGroup {
   private counter = 0;
-  private readonly healers: Healer[] = [];
+  readonly healers: Healer[] = [];
 
   constructor(
     private readonly drednotBotFactory: DrednotBotFactory,

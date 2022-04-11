@@ -5,7 +5,7 @@ import { TurretOperator } from "./TurretOperator";
 
 export class TurretOperatorGroup {
   private counter = 0;
-  private readonly operators: TurretOperator[] = [];
+  readonly operators: TurretOperator[] = [];
 
   constructor(
     private readonly drednotBotFactory: DrednotBotFactory,
