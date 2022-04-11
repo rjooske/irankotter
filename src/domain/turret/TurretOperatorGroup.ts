@@ -13,7 +13,7 @@ export class TurretOperatorGroup {
     private readonly logger: Logger
   ) {}
 
-  async create(url: string) {
+  readonly create = async (url: string) => {
     const onClose = () => {
       this.removeOperator(operator);
     };
@@ -33,12 +33,12 @@ export class TurretOperatorGroup {
     this.operators.push(operator);
 
     this.counter++;
-  }
+  };
 
-  private removeOperator(operator: TurretOperator) {
+  private readonly removeOperator = (operator: TurretOperator) => {
     const index = this.operators.indexOf(operator);
     if (index >= 0) {
       this.operators.splice(index, 1);
     }
-  }
+  };
 }
