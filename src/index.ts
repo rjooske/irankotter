@@ -1,8 +1,10 @@
 // import commandLineArgs from "command-line-args";
 
-import { TurretOperatorGroup } from "./domain/turret/TurretOperatorGroup";
+import { createServer } from "http";
+import { HealerApplication } from "./application/healer/HealerApplication";
+import { HealerGroup } from "./domain/healer/HealerGroup";
 import { DrednotBotFactory } from "./infrastructure/drednot/DrednotBotFactory";
-import { MouseService } from "./infrastructure/mouse/MouseService";
+import { HealerController } from "./presentation/controller/healer/HealerController";
 
 // interface Options {
 //   development: boolean;
@@ -165,18 +167,29 @@ import { MouseService } from "./infrastructure/mouse/MouseService";
 // main();
 
 (async () => {
-  const mouseService = new MouseService();
-  const turretOperatorGroup = new TurretOperatorGroup(
-    new DrednotBotFactory(false),
-    mouseService,
-    (log) => console.log(log)
-  );
-  await turretOperatorGroup.create(
-    "https://test.drednot.io/invite/VtRqyN08DyngT4fvLr_FOPaL"
-  );
+  // const mouseService = new MouseService();
+  // const turretOperatorGroup = new TurretOperatorGroup(
+  //   new DrednotBotFactory(false),
+  //   mouseService,
+  //   (log) => console.log(log)
+  // );
+  // await turretOperatorGroup.create(
+  //   "https://test.drednot.io/invite/VtRqyN08DyngT4fvLr_FOPaL"
+  // );
   // const healerController = new HealerController((log) => console.log(log));
   // healerController.create(
   //   "https://test.drednot.io/invite/VtRqyN08DyngT4fvLr_FOPaL",
   //   "right"
   // );
+
+  const server = createServer();
+  const drednotBotFactory = new DrednotBotFactory(false);
+  const logger = (s: string) => console.log(s);
+  const healerController = new HealerController(
+    server,
+    new HealerApplication(new HealerGroup(drednotBotFactory, logger)),
+    logger
+  );
+
+  server.listen(8080, () => logger("Server started"));
 })();
