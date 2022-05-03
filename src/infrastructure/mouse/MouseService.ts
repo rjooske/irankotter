@@ -3,6 +3,7 @@ import {
   request as WebSocketRequest,
   server as WebSocketServer,
 } from "websocket";
+import { Logger } from "../../domain/log/Logger";
 import { MouseEventListener } from "../../domain/mouse/MouseEventListener";
 import { MouseService as DomainMouseService } from "../../domain/mouse/MouseService";
 import { MouseMessage } from "./message";
@@ -10,20 +11,29 @@ import { MouseMessage } from "./message";
 export class MouseService implements DomainMouseService {
   private readonly listeners: MouseEventListener[] = [];
 
-  constructor(server: Server) {
+  constructor(server: Server, private readonly logger: Logger) {
     new WebSocketServer({
       httpServer: server,
     }).on("request", this.handleRequest);
   }
 
   private readonly handleRequest = (request: WebSocketRequest) => {
-    request.accept("echo-protocol", request.origin).on("message", (message) => {
+    const connection = request.accept("echo-protocol", request.origin);
+    this.logger(`accepted websocket connection from ${request.origin}`);
+
+    connection.on("message", (message) => {
       if (message.type !== "utf8") {
         return;
       }
 
       const data = JSON.parse(message.utf8Data);
       this.handleMouseMessage(data);
+    });
+
+    connection.on("close", (code, description) => {
+      this.logger(
+        `websocket connection closed with code ${code} because: ${description}`
+      );
     });
   };
 
