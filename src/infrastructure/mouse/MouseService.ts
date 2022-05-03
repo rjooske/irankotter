@@ -1,35 +1,56 @@
+import { Server } from "https";
+import {
+  request as WebSocketRequest,
+  server as WebSocketServer,
+} from "websocket";
 import { MouseEventListener } from "../../domain/mouse/MouseEventListener";
-import * as domain from "../../domain/mouse/MouseService";
+import { MouseService as DomainMouseService } from "../../domain/mouse/MouseService";
+import { MouseMessage } from "./message";
 
-export class MouseService implements domain.MouseService {
+export class MouseService implements DomainMouseService {
   private readonly listeners: MouseEventListener[] = [];
 
-  constructor() {
-    setInterval(() => {
-      const angle = (Math.PI / 2) * (Date.now() / 1000);
-      const x = 0.5 * Math.cos(angle) + 0.5;
-      const y = 0.5 * Math.sin(angle) + 0.5;
+  constructor(server: Server) {
+    new WebSocketServer({
+      httpServer: server,
+    }).on("request", this.handleRequest);
+  }
 
-      for (const listener of this.listeners) {
-        listener.onMouseMove({
-          x,
-          y,
-          screenWidth: 1,
-          screenHeight: 1,
-        });
+  private readonly handleRequest = (request: WebSocketRequest) => {
+    request.accept("echo-protocol", request.origin).on("message", (message) => {
+      if (message.type !== "utf8") {
+        return;
       }
-    }, 50);
-  }
 
-  addEventListener(listener: MouseEventListener) {
-    this.listeners.push(listener);
-  }
+      const data = JSON.parse(message.utf8Data);
+      this.handleMouseMessage(data);
+    });
+  };
 
-  removeEventListener(listener: MouseEventListener) {
-    for (let i = 0; i < this.listeners.length; i++) {
-      if (this.listeners[i] === listener) {
-        this.listeners.splice(i, 1);
+  private readonly handleMouseMessage = (message: MouseMessage) => {
+    if (message.type === "move") {
+      for (const listener of this.listeners) {
+        listener.onMouseMove(message);
+      }
+    } else if (message.type === "down") {
+      for (const listener of this.listeners) {
+        listener.onMouseButtonDown(message.button);
+      }
+    } else if (message.type === "up") {
+      for (const listener of this.listeners) {
+        listener.onMouseButtonUp(message.button);
       }
     }
-  }
+  };
+
+  readonly addEventListener = (listener: MouseEventListener) => {
+    this.listeners.push(listener);
+  };
+
+  readonly removeEventListener = (listener: MouseEventListener) => {
+    const index = this.listeners.indexOf(listener);
+    if (index >= 0) {
+      this.listeners.splice(index, 1);
+    }
+  };
 }
