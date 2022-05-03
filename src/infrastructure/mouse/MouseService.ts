@@ -18,7 +18,11 @@ export class MouseService implements DomainMouseService {
   }
 
   private readonly handleRequest = (request: WebSocketRequest) => {
-    const connection = request.accept("echo-protocol", request.origin);
+    if (request.httpRequest.url !== "/mouse") {
+      return;
+    }
+
+    const connection = request.accept(null, request.origin);
     this.logger(`accepted websocket connection from ${request.origin}`);
 
     connection.on("message", (message) => {
