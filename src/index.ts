@@ -31,7 +31,7 @@ import { HealerController } from "./presentation/controller/healer/HealerControl
     new TurretOperatorGroup(drednotBotFactory, mouseService, logger)
   );
 
-  const port = 8080;
+  const port = 4433;
   server.listen(port, () => logger(`server started at ${port}`));
 })();
 
