@@ -2,7 +2,6 @@ import { IncomingMessage, Server, ServerResponse } from "http";
 import { Readable } from "stream";
 import { HealerApplication } from "../../../application/healer/HealerApplication";
 import { HealerClickDirection } from "../../../domain/healer/HealerClickDirection";
-import { Logger } from "../../../domain/log/Logger";
 
 interface PostBody {
   url: string;
@@ -13,8 +12,7 @@ interface PostBody {
 export class HealerController {
   constructor(
     server: Server,
-    private readonly healerApplication: HealerApplication,
-    private readonly logger: Logger
+    private readonly healerApplication: HealerApplication
   ) {
     server.on("request", this.handleRequest);
   }
@@ -26,8 +24,6 @@ export class HealerController {
     if (request.url !== "/healer") {
       return;
     }
-
-    this.logger("got a request at /healer");
 
     switch (request.method) {
       case "GET":
@@ -68,8 +64,8 @@ export class HealerController {
       return;
     }
 
-    response.writeHead(200).end();
     await this.healerApplication.create(body.url, body.clickDirection);
+    response.writeHead(200).end();
   };
 }
 
