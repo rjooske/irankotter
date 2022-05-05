@@ -8,20 +8,32 @@
 (function () {
   "use strict";
 
-  let ws = new WebSocket("wss://localhost:4433/mouse");
+  const ws = new (class {
+    constructor() {
+      this.connection = new WebSocket("wss://localhost:4433/mouse");
 
-  setInterval(() => {
-    if (
-      ws.readyState === WebSocket.CLOSING ||
-      ws.readyState === WebSocket.CLOSED
-    ) {
-      ws = new WebSocket(ws.url);
+      setInterval(() => {
+        if (!this.isAlive()) {
+          this.connection = new WebSocket(this.connection.url);
+        }
+      }, 5000);
     }
-  }, 5000);
 
-  function sendAsJson(object) {
-    ws.send(JSON.stringify(object));
-  }
+    isAlive() {
+      return (
+        this.connection.readyState === WebSocket.CONNECTING ||
+        this.connection.readyState === WebSocket.OPEN
+      );
+    }
+
+    send(object) {
+      if (!this.isAlive()) {
+        return;
+      }
+
+      this.connection.send(JSON.stringify(object));
+    }
+  })();
 
   function convertBrowserButtonToServerButton(button) {
     switch (button) {
@@ -33,7 +45,7 @@
   }
 
   window.addEventListener("mousemove", (event) => {
-    sendAsJson({
+    ws.send({
       type: "move",
       x: event.clientX,
       y: event.clientY,
@@ -47,7 +59,7 @@
     if (!button) {
       return;
     }
-    sendAsJson({ type: "down", button });
+    ws.send({ type: "down", button });
   });
 
   window.addEventListener("mouseup", (event) => {
@@ -55,6 +67,6 @@
     if (!button) {
       return;
     }
-    sendAsJson({ type: "up", button });
+    ws.send({ type: "up", button });
   });
 })();
