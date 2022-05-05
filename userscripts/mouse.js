@@ -8,7 +8,16 @@
 (function () {
   "use strict";
 
-  const ws = new WebSocket("wss://localhost:4433/mouse");
+  let ws = new WebSocket("wss://localhost:4433/mouse");
+
+  setInterval(() => {
+    if (
+      ws.readyState === WebSocket.CLOSING ||
+      ws.readyState === WebSocket.CLOSED
+    ) {
+      ws = new WebSocket(ws.url);
+    }
+  }, 5000);
 
   function sendAsJson(object) {
     ws.send(JSON.stringify(object));
