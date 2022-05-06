@@ -43,6 +43,7 @@ export class Router {
       (route) => route.method === request.method && route.url === request.url
     );
     if (!route) {
+      response.writeHead(404).end("Not Found");
       return;
     }
 
