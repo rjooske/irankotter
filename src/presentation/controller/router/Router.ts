@@ -1,8 +1,7 @@
 import { IncomingMessage, ServerResponse } from "http";
-import { createServer } from "https";
+import { Server } from "https";
 import { Readable } from "stream";
 import { inspect } from "util";
-import { Logger } from "../../../domain/log/Logger";
 import { GetReceiver, PostReceiver } from "./types";
 
 interface GetRoute {
@@ -19,31 +18,17 @@ interface PostRoute {
 
 type Route = GetRoute | PostRoute;
 
-export class HttpsServer {
-  private readonly routes: Route[] = [
-    {
-      method: "GET",
-      url: "/",
-      receiver: async () => ({ status: 200, body: "OK" }),
-    },
-  ];
+export class Router {
+  private readonly routes: Route[] = [];
 
-  constructor(
-    certificate: string,
-    key: string,
-    private readonly logger: Logger
-  ) {
-    createServer({ cert: certificate, key }, this.handleRequest);
+  constructor(server: Server) {
+    server.on("request", this.handleRequest);
   }
 
   private readonly handleRequest = async (
     request: IncomingMessage,
     response: ServerResponse
   ) => {
-    this.logger(
-      `received "${request.method} ${request.url}" from ${request.headers.origin}`
-    );
-
     response.setHeader("Access-Control-Allow-Origin", "*");
     response.setHeader("Access-Control-Allow-Headers", "*");
     response.setHeader("Access-Control-Allow-Methods", "*");
