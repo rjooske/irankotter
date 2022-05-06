@@ -70,11 +70,11 @@
         <form id="irankotter-healer-form">
           <div>
             <label>Invite link</label>
-            <input type="url" name="url" />
+            <input type="url" name="url" required />
           </div>
           <div>
             <label>Count</label>
-            <input type="number" name="count" min="1" max="9" value="1" />
+            <input type="number" name="count" required min="1" max="9" value="1" />
           </div>
           <div>
             <label>Click direction</label>
@@ -92,11 +92,11 @@
         <form id="irankotter-turret-operator-form">
           <div>
             <label>Invite link</label>
-            <input type="url" name="url" />
+            <input type="url" name="url" required />
           </div>
           <div>
             <label>Count</label>
-            <input type="number" name="count" min="1" max="9" value="1" />
+            <input type="number" name="count" required min="1" max="9" value="1" />
           </div>
           <input type="submit" name="summon" form="irankotter-turret-operator-form" class="btn btn-green btn-small" value="Summon" />
         </form>
