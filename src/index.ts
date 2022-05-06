@@ -9,6 +9,7 @@ import { DrednotBotFactory } from "./infrastructure/drednot/DrednotBotFactory";
 import { MouseService } from "./infrastructure/mouse/MouseService";
 import { HealerController } from "./presentation/controller/healer/HealerController";
 import { Router } from "./presentation/controller/router/Router";
+import { TurretOperatorController } from "./presentation/controller/turret-operator/TurretOperatorController";
 
 (async () => {
   const logger = (s: string) => {
@@ -30,8 +31,11 @@ import { Router } from "./presentation/controller/router/Router";
     router,
     new HealerApplication(new HealerGroup(drednotBotFactory, logger))
   );
-  new TurretOperatorApplication(
-    new TurretOperatorGroup(drednotBotFactory, mouseService, logger)
+  new TurretOperatorController(
+    router,
+    new TurretOperatorApplication(
+      new TurretOperatorGroup(drednotBotFactory, mouseService, logger)
+    )
   );
 
   const port = 4433;
