@@ -1,9 +1,9 @@
 import { IncomingMessage, ServerResponse } from "http";
 import { createServer } from "https";
+import { Readable } from "stream";
 import { inspect } from "util";
 import { Logger } from "../../../domain/log/Logger";
-import { GetReceiver } from "./GetReceiver";
-import { PostReceiver } from "./PostReceiver";
+import { GetReceiver, PostReceiver } from "./types";
 
 interface GetRoute {
   method: "GET";
@@ -24,7 +24,7 @@ export class HttpsServer {
     {
       method: "GET",
       url: "/",
-      receiver: async () => "OK",
+      receiver: async () => ({ status: 200, body: "OK" }),
     },
   ];
 
@@ -61,15 +61,11 @@ export class HttpsServer {
       return;
     }
 
-    let body = "";
     try {
-      if (route.method === "GET") {
-        body = await route.receiver();
-      } else if (route.method === "POST") {
-        body = await route.receiver(""); // FIXME:
-      }
+      const { status, headers, body } = await callRouteReceiver(route, request);
+      response.writeHead(status, headers).end(body);
     } catch (error) {
-      body = inspect(error);
+      response.writeHead(500).end(inspect(error));
     }
   };
 
@@ -80,4 +76,25 @@ export class HttpsServer {
   readonly receivePost = (url: string, receiver: PostReceiver) => {
     this.routes.push({ method: "POST", url, receiver });
   };
+}
+
+async function callRouteReceiver(route: Route, request: IncomingMessage) {
+  const url = request.url ?? "";
+  const headers = request.headers;
+
+  switch (route.method) {
+    case "GET":
+      return await route.receiver({ url, headers });
+    case "POST":
+      const body = await convertStreamToString(request);
+      return await route.receiver({ url, headers, body });
+  }
+}
+
+async function convertStreamToString(stream: Readable) {
+  const chunks: Buffer[] = [];
+  for await (const chunk of stream) {
+    chunks.push(Buffer.from(chunk));
+  }
+  return Buffer.concat(chunks).toString("utf8");
 }
