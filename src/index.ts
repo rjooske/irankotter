@@ -8,6 +8,7 @@ import { TurretOperatorGroup } from "./domain/turret/TurretOperatorGroup";
 import { DrednotBotFactory } from "./infrastructure/drednot/DrednotBotFactory";
 import { MouseService } from "./infrastructure/mouse/MouseService";
 import { HealerController } from "./presentation/controller/healer/HealerController";
+import { Router } from "./presentation/controller/router/Router";
 
 (async () => {
   const logger = (s: string) => {
@@ -20,12 +21,13 @@ import { HealerController } from "./presentation/controller/healer/HealerControl
     "cert/localhost/localhost.key",
     logger
   );
+  const router = new Router(server);
 
   const drednotBotFactory = new DrednotBotFactory(true);
   const mouseService = new MouseService(server, logger);
 
   new HealerController(
-    server,
+    router,
     new HealerApplication(new HealerGroup(drednotBotFactory, logger))
   );
   new TurretOperatorApplication(
@@ -43,26 +45,10 @@ function createHttpsServer(
 ) {
   return createServer(
     { cert: readFileSync(certificatePath), key: readFileSync(keyPath) },
-    (request, response) => {
+    (request) => {
       logger(
-        `got "${request.method} ${request.url}" from ${request.headers.origin}`
+        `received "${request.method} ${request.url}" from ${request.headers.origin}`
       );
-
-      response.setHeader("Access-Control-Allow-Origin", "*");
-      response.setHeader("Access-Control-Allow-Headers", "*");
-      response.setHeader("Access-Control-Allow-Methods", "OPTIONS, POST, GET");
-      response.setHeader("Access-Control-Max-Age", 2592000);
-
-      if (request.method === "OPTIONS") {
-        response.writeHead(204);
-        response.end();
-        return;
-      }
-
-      if (request.url === "/") {
-        response.writeHead(200);
-        response.end("OK");
-      }
     }
   );
 }

@@ -1,56 +1,39 @@
-import { IncomingMessage, Server, ServerResponse } from "http";
-import { Readable } from "stream";
 import { HealerApplication } from "../../../application/healer/HealerApplication";
 import { HealerClickDirection } from "../../../domain/healer/HealerClickDirection";
+import { Router } from "../router/Router";
+import { PostRequest, Response } from "../router/types";
 
 interface PostBody {
   url: string;
   clickDirection: HealerClickDirection;
 }
 
-// TODO: Generalize the http routing boilerplate
 export class HealerController {
   constructor(
-    server: Server,
+    router: Router,
     private readonly healerApplication: HealerApplication
   ) {
-    server.on("request", this.handleRequest);
+    const url = "/healer";
+    router.receiveGet(url, this.handleGet);
+    router.receivePost(url, this.handlePost);
   }
 
-  private readonly handleRequest = async (
-    request: IncomingMessage,
-    response: ServerResponse
-  ) => {
-    if (request.url !== "/healer") {
-      return;
-    }
-
-    switch (request.method) {
-      case "GET":
-        await this.handleGet(response);
-        break;
-      case "POST":
-        await this.handlePost(request, response);
-        break;
-    }
-  };
-
-  private readonly handleGet = async (response: ServerResponse) => {
-    const output = this.healerApplication
+  private readonly handleGet = async (): Promise<Response> => {
+    const healers = this.healerApplication
       .list()
       .map((healer) => ({ shipName: healer.getShipName() }));
-    response
-      .writeHead(200, { "Content-Type": "application/json" })
-      .end(JSON.stringify(output));
+
+    return {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(healers),
+    };
   };
 
   private readonly handlePost = async (
-    request: IncomingMessage,
-    response: ServerResponse
-  ) => {
-    const body = (await parseStreamAsJSON(request)) as
-      | Partial<PostBody>
-      | undefined;
+    request: PostRequest
+  ): Promise<Response> => {
+    const body = JSON.parse(request.body) as Partial<PostBody> | undefined;
     if (
       !body ||
       !body.url ||
@@ -60,26 +43,11 @@ export class HealerController {
         body.clickDirection === "right"
       )
     ) {
-      response.writeHead(400).end();
-      return;
+      return { status: 400 };
     }
 
     await this.healerApplication.create(body.url, body.clickDirection);
-    response.writeHead(200).end();
+
+    return { status: 200 };
   };
-}
-
-async function parseStreamAsJSON(stream: Readable) {
-  const string = await convertStreamToString(stream);
-  try {
-    return JSON.parse(string);
-  } catch {}
-}
-
-async function convertStreamToString(stream: Readable) {
-  const chunks: Buffer[] = [];
-  for await (const chunk of stream) {
-    chunks.push(Buffer.from(chunk));
-  }
-  return Buffer.concat(chunks).toString("utf8");
 }
